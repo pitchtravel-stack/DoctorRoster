@@ -91,6 +91,68 @@
     });
   }
 
+
+  /** ตารางเวรในเวลา (A–S) — A4 แนวนอน */
+  function buildDayDoc(D, o) {
+    const st = o.settings, m = o.month, FONT = st.font || DEFAULT_FONT;
+    const rooms = (st.rooms || []).filter(r => r.active !== false);
+    const [by, mm] = m.month.split('-').map(Number);
+    const nDays = new Date(by - 543, mm, 0).getDate();
+    const hol = new Set((m.holidays || []).map(Number));
+    const TH_D = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
+    const leave = m.leave || {};
+    const TOTAL = 15800, DATE_W = 620, LV_W = 1100;
+    const colW = Math.floor((TOTAL - DATE_W - LV_W) / (rooms.length * 2));
+    const HEAD = 'DCE6F1', HOLF = 'EEEEEE';
+    const border = { style: D.BorderStyle.SINGLE, size: 4, color: '000000' };
+    const borders = { top: border, bottom: border, left: border, right: border };
+    const SZ = rooms.length > 8 ? 9 : 10;
+    const txt = (t, opt = {}) => new D.Paragraph({
+      alignment: opt.align || D.AlignmentType.CENTER, spacing: { before: 0, after: opt.after || 0, line: 228 },
+      children: [new D.TextRun({ text: t || '', bold: !!opt.bold, color: opt.color, font: { ascii: FONT, hAnsi: FONT, cs: FONT, eastAsia: FONT },
+        size: (opt.size || SZ) * 2, sizeComplexScript: (opt.size || SZ) * 2, boldComplexScript: !!opt.bold })]
+    });
+    const cell = (t, opt = {}) => new D.TableCell({
+      children: [txt(t, opt)], columnSpan: opt.colSpan, rowSpan: opt.rowSpan, verticalAlign: D.VerticalAlign.CENTER, borders,
+      width: { size: opt.w || colW, type: D.WidthType.DXA },
+      shading: opt.fill ? { fill: opt.fill, type: D.ShadingType.CLEAR, color: 'auto' } : undefined
+    });
+    const r1 = [cell('วันที่', { bold: true, rowSpan: 3, fill: HEAD, w: DATE_W })]
+      .concat(rooms.map(r => cell(r.name + (r.room && r.room !== r.name ? ' · ' + r.room : ''), { bold: true, colSpan: 2, fill: HEAD, w: colW * 2 })))
+      .concat([cell('ลา', { bold: true, rowSpan: 3, fill: HEAD, w: LV_W })]);
+    const r2 = rooms.map(r => cell(r.duty, { colSpan: 2, fill: HEAD, w: colW * 2, size: SZ - 1 }));
+    const r3 = [].concat(...rooms.map(() => [cell('8.30-12.00', { fill: HEAD, size: SZ - 1 }), cell('12.00-16.30', { fill: HEAD, size: SZ - 1 })]));
+    const rows = [r1, r2, r3].map(c => new D.TableRow({ children: c, tableHeader: true }));
+    for (let d = 1; d <= nDays; d++) {
+      const w = new Date(by - 543, mm - 1, d).getDay(), h = hol.has(d);
+      const dc = cell(d + ' ' + TH_D[w], { w: DATE_W, bold: h, color: h ? 'C00000' : undefined, fill: h ? HOLF : undefined });
+      const lv = Object.keys(leave).filter(n => (leave[n] || []).map(Number).includes(d)).join(', ');
+      let cells;
+      if (h) cells = [dc, cell('วันหยุดราชการ', { colSpan: rooms.length * 2, w: colW * rooms.length * 2, fill: HOLF, color: '666666' }), cell(lv, { w: LV_W, fill: HOLF })];
+      else {
+        const day = (m.dayDays && m.dayDays[d]) || {};
+        cells = [dc].concat(...rooms.map(r => [cell(day[r.k + '_M'] || ''), cell(day[r.k + '_A'] || '')])).concat([cell(lv, { w: LV_W, color: 'B91C1C' })]);
+      }
+      rows.push(new D.TableRow({ height: { value: 280, rule: D.HeightRule.ATLEAST }, children: cells }));
+    }
+    const table = new D.Table({
+      rows, width: { size: DATE_W + LV_W + colW * rooms.length * 2, type: D.WidthType.DXA },
+      columnWidths: [DATE_W].concat(Array(rooms.length * 2).fill(colW), [LV_W]),
+      layout: D.TableLayoutType.FIXED, alignment: D.AlignmentType.CENTER, margins: { left: 30, right: 30, top: 0, bottom: 0 }
+    });
+    return new D.Document({
+      styles: { default: { document: { run: { font: FONT, size: SZ * 2 } } } },
+      sections: [{
+        properties: { page: { size: { width: 11906, height: 16838, orientation: D.PageOrientation.LANDSCAPE }, margin: { top: 500, bottom: 400, left: 500, right: 500 } } },
+        children: [
+          txt('ตารางปฏิบัติงานแพทย์ในเวลาราชการ ' + st.hospital + '  ประจำเดือน ' + TH_MONTHS[mm - 1] + ' ' + by, { size: 15, bold: true, after: 80 }),
+          table,
+          txt(m.note ? 'หมายเหตุ  ' + m.note : '', { align: D.AlignmentType.LEFT, size: 11 })
+        ]
+      }]
+    });
+  }
+
   function runs(arr, keyFn) {
     const out = [];
     arr.forEach(x => {
@@ -101,7 +163,7 @@
     return out;
   }
 
-  const api = { buildRosterDoc, TH_MONTHS };
+  const api = { buildRosterDoc, buildDayDoc, TH_MONTHS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.WordExport = api;
 })(this);

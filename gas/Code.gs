@@ -5,7 +5,7 @@
  *
  * วิธีติดตั้ง: ดู README.md
  */
-const APP_VERSION = 'v1.0.0';
+const APP_VERSION = 'v1.1.0';
 const SESSION_HOURS = 4;
 const OTP_MINUTES = 10;
 const OTP_MAX_TRY = 5;
@@ -212,7 +212,7 @@ function saveMonth_(data, baseUpdatedAt, user) {
     if (m.row && baseUpdatedAt && m.v[3] && new Date(m.v[3]).getTime() !== Number(baseUpdatedAt)) {
       throw new Error('มีผู้อื่นแก้ไขเดือนนี้ไปก่อนแล้ว (' + m.v[2] + ') กรุณาโหลดข้อมูลใหม่');
     }
-    const clean = { month: data.month, days: data.days || {}, holidays: data.holidays || [], note: data.note || '' };
+    const clean = { month: data.month, days: data.days || {}, dayDays: data.dayDays || {}, leave: data.leave || {}, pool: data.pool || [], holidays: data.holidays || [], note: data.note || '' };
     const now = new Date();
     const row = [data.month, JSON.stringify(clean), user.email, now];
     if (m.row) m.s.getRange(m.row, 1, 1, 4).setValues([row]);

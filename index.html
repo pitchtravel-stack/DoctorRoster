@@ -83,6 +83,54 @@ table.g td.sum{font-size:12.5px;color:var(--mut);white-space:nowrap}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px}
 .note-in{display:flex;gap:8px;align-items:center;margin-top:12px}
 .note-in input{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:10px}
+table.g td.lv select{background:#fee2e2;border-color:#fca5a5;color:#b91c1c}
+.top .mon select{padding:7px 10px}
+.top .status{white-space:nowrap}
+/* pool */
+table.p{width:100%;border-collapse:collapse}
+table.p th{font-size:13px;color:var(--mut);text-align:left;padding:8px;border-bottom:1px solid var(--line);font-weight:600}
+table.p td{padding:7px 8px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+table.p tr.off td{opacity:.45}
+table.p input[type=text]{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:8px}
+.chip{display:inline-block;background:#fee2e2;color:#b91c1c;border-radius:999px;padding:1px 8px;font-size:12.5px;margin:1px 2px}
+.tog{appearance:none;width:38px;height:22px;background:#cbd5e1;border-radius:999px;position:relative;cursor:pointer;vertical-align:middle}
+.tog:checked{background:var(--blue2)} .tog::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.15s}
+.tog:checked::after{left:19px}
+.btn.sm{padding:4px 9px;font-size:13px}
+/* day grid */
+table.dg{border-collapse:separate;border-spacing:0;min-width:100%}
+table.dg th,table.dg td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center;padding:2px 3px}
+table.dg thead th{background:var(--blue-l);position:sticky;z-index:3;font-size:13.5px;font-weight:600}
+table.dg thead tr:nth-child(1) th{top:0;height:42px}
+table.dg thead tr:nth-child(2) th{top:42px;height:34px;font-weight:400;font-size:11.5px;color:var(--mut);line-height:1.2}
+table.dg thead tr:nth-child(3) th{top:76px;font-size:12px}
+table.dg th.room{cursor:pointer} table.dg th.room:hover{background:var(--blue-m)}
+table.dg .sd{position:sticky;left:0;z-index:2;background:#fff;min-width:64px}
+table.dg thead .sd{z-index:4;background:var(--blue-l)}
+table.dg td.sd{font-weight:600;cursor:pointer} table.dg td.sd small{display:block;font-weight:400;font-size:11px;color:var(--mut)}
+table.dg td.half2{border-right:2px solid #cbd5e1}
+table.dg select{width:100%;min-width:84px;border:1px solid transparent;background:transparent;padding:5px 1px;border-radius:7px;text-align:center;text-align-last:center;cursor:pointer;font-size:14px}
+table.dg select:hover{border-color:#bfdbfe;background:#fff}
+table.dg select.ro{pointer-events:none}
+table.dg td.cf select{background:#fff7ed;border-color:#fdba74}
+table.dg td.lv select{background:#fee2e2;border-color:#fca5a5;color:#b91c1c}
+table.dg tr.wk-start td{border-top:2px solid #94a3b8}
+table.dg tr.hol td{background:#f1f5f9;color:var(--mut);font-size:13px;height:26px}
+table.dg tr.hol td.sd{color:var(--red);background:#f1f5f9}
+table.dg td.leave{min-width:110px;text-align:left;cursor:pointer;font-size:13px}
+table.dg td.act{white-space:nowrap}
+.dtabs{display:flex;gap:6px;flex-wrap:wrap}
+.dtabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;cursor:pointer}
+.dtabs button.on{background:var(--blue2);color:#fff;border-color:var(--blue2)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:12px 0}
+.cal .h{font-size:12px;color:var(--mut);text-align:center}
+.cal button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 0;cursor:pointer}
+.cal button.hd{color:var(--red)} .cal button.on{background:#ef4444;color:#fff;border-color:#ef4444}
+.mrow{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+.msel{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.menu{position:absolute;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15);z-index:70;padding:5px;min-width:220px}
+.menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:7px;cursor:pointer}
+.menu button:hover{background:var(--blue-l)}
 /* summary */
 table.s{border-collapse:collapse;width:100%}
 table.s th,table.s td{border:1px solid var(--line);padding:7px 8px;text-align:center}
@@ -117,13 +165,14 @@ table.e .x{background:none;border:0;color:#b91c1c;cursor:pointer;font-size:18px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .overlay{display:none}
 @media(max-width:860px){
+  .top{flex-wrap:wrap} .top .status{display:none}
   #side{transform:translateX(-100%)} #side.open{transform:none}
   .overlay.open{display:block;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:25}
   #main{margin-left:0} #burger{display:block} .page{padding:14px 10px 60px} .top{padding:12px 12px}
   .frm{grid-template-columns:1fr}
 }
 @media print{
-  #side,.top,.bar,.legend,.note-in,.noprint{display:none!important}
+  #side,.top,.bar,.legend,.note-in,.noprint,.act,th:last-child:empty{display:none!important}
   #main{margin:0} .page{padding:0} .card{border:0;padding:0}
   .gridwrap{max-height:none;overflow:visible;border:0}
   body{background:#fff}
@@ -158,7 +207,9 @@ table.e .x{background:none;border:0;color:#b91c1c;cursor:pointer;font-size:18px}
   <aside id="side">
     <div class="brand"><b>ตารางเวรแพทย์</b><span>นอกเวลาราชการ · รพ.ร้องกวาง</span></div>
     <nav class="nav" id="nav">
-      <a data-p="roster"><span class="ic">📅</span>ตารางเวรรายเดือน</a>
+      <a data-p="pool"><span class="ic">👩‍⚕️</span>แพทย์ประจำเดือน</a>
+      <a data-p="day"><span class="ic">🏥</span>เวรในเวลา (A–S)</a>
+      <a data-p="roster"><span class="ic">🌙</span>เวรนอกเวลา (T–Z)</a>
       <a data-p="summary"><span class="ic">💰</span>สรุปค่าตอบแทน</a>
       <a data-p="settings" data-role="admin"><span class="ic">⚙️</span>ตั้งค่า</a>
       <a data-p="users" data-role="admin"><span class="ic">👥</span>ผู้ใช้งาน</a>
@@ -169,24 +220,56 @@ table.e .x{background:none;border:0;color:#b91c1c;cursor:pointer;font-size:18px}
   </aside>
   <div class="overlay" id="ovl"></div>
   <main id="main">
-    <div class="top"><button id="burger" aria-label="เมนู">☰</button><h2 id="ptitle"></h2><span class="demo hidden" id="demoTag">โหมดทดลอง (ข้อมูลเก็บในเครื่อง)</span></div>
+    <div class="top"><button id="burger" aria-label="เมนู">☰</button><h2 id="ptitle"></h2>
+      <div class="mon">
+        <button class="btn ghost" id="mPrev">‹</button><select id="mSel"></select><button class="btn ghost" id="mNext">›</button>
+        <span class="status" id="mStatus"></span>
+        <button class="btn pri ed" id="btnSave">บันทึก</button>
+      </div>
+      <span class="demo hidden" id="demoTag">โหมดทดลอง (ข้อมูลเก็บในเครื่อง)</span></div>
+
+    <!-- pool -->
+    <div class="page hidden" id="p-pool">
+      <div class="card">
+        <div class="bar" style="margin:0">
+          <div><b>แพทย์ที่ขึ้นเวรเดือน <span id="poolMonth"></span></b><div class="hint">เปิด/ปิดได้รายเดือน · แก้ชื่อได้ · กำหนดวันลา (ระบบเตือนถ้าจัดเวรตรงวันลา) · คนที่ปิดจะไม่อยู่ในตัวเลือกของเดือนนี้ · เดือนใหม่จะดึงรายชื่อจากเดือนก่อนให้อัตโนมัติ</div></div>
+          <span class="sp"></span>
+          <button class="btn ghost ed" id="poolPrev">ดึงรายชื่อจากเดือนก่อน</button>
+          <button class="btn ed" id="poolAdd">+ เพิ่มแพทย์</button>
+        </div>
+      </div>
+      <div class="card" style="overflow:auto"><table class="p" id="tPool"></table></div>
+    </div>
+
+    <!-- day (A–S) -->
+    <div class="page hidden" id="p-day">
+      <div class="bar">
+        <div class="tabs dtabs"><button class="on" data-v="all">ทั้งเดือน</button><button data-v="w1">สัปดาห์ 1</button><button data-v="w2">2</button><button data-v="w3">3</button><button data-v="w4">4</button><button data-v="w5">5</button><button data-v="w6">6</button></div>
+        <label class="hint"><input type="checkbox" id="showHol"> แสดงวันหยุด</label>
+        <span class="sp"></span>
+        <button class="btn ed" id="btnImport2">นำเข้า CSV จาก Excel</button>
+        <button class="btn ghost ed" id="btnPattern">ใช้รูปแบบสัปดาห์แรกทั้งเดือน</button>
+        <button class="btn dan ed" id="btnDayClear">ล้างตาราง</button>
+        <button class="btn" id="btnDayWord">⬇ Word</button>
+        <button class="btn" onclick="print()">พิมพ์</button>
+      </div>
+      <div class="gridwrap"><table class="dg" id="dgrid"></table></div>
+      <div class="legend">
+        <span><i style="background:#fee2e2;border:1px solid #fca5a5"></i>จัดเวรตรงวันลา</span>
+        <span><i style="background:#fff7ed;border:1px solid #fdba74"></i>คนเดียวกันอยู่ 2 ห้องในช่วงเวลาเดียวกัน</span>
+        <span>คลิก <b>ชื่อห้อง</b> = ใส่คนเดียวทั้งเดือน · คลิก <b>วันที่</b> หรือ ⋯ = คัดลอกแถว · คลิกช่อง <b>ลา</b> = แก้ผู้ลา · วันหยุด/วันทำการ ตั้งที่หน้าเวรนอกเวลา (คลิกวันที่)</span>
+      </div>
+    </div>
 
     <!-- roster -->
     <div class="page" id="p-roster">
       <div class="bar">
-        <div class="mon">
-          <button class="btn ghost" id="mPrev">‹</button>
-          <select id="mSel"></select>
-          <button class="btn ghost" id="mNext">›</button>
-        </div>
-        <span class="status" id="mStatus"></span>
         <span class="sp"></span>
         <button class="btn ed" id="btnImport">นำเข้า CSV จาก Excel</button>
         <button class="btn ed" id="btnHolAuto" title="ตั้งวันหยุดใหม่จากเสาร์-อาทิตย์และรายการวันหยุด">รีเซ็ตวันหยุด</button>
         <button class="btn dan ed" id="btnClear">ล้างตาราง</button>
         <button class="btn" id="btnWord">⬇ Word</button>
         <button class="btn" onclick="print()">พิมพ์</button>
-        <button class="btn pri ed" id="btnSave">บันทึก</button>
         <input type="file" id="fileCsv" accept=".csv,text/csv" class="hidden">
       </div>
       <div class="gridwrap"><table class="g" id="grid"></table></div>
@@ -194,6 +277,7 @@ table.e .x{background:none;border:0;color:#b91c1c;cursor:pointer;font-size:18px}
       <div class="legend">
         <span><i style="background:var(--hol);border:1px solid #f5c2c2"></i>วันหยุด (คลิกที่วันที่เพื่อสลับวันหยุด/วันทำการ)</span>
         <span><i style="background:#fff7ed;border:1px solid #fdba74"></i>ชื่อซ้ำในช่วงเวลาเดียวกัน</span>
+        <span><i style="background:#fee2e2;border:1px solid #fca5a5"></i>จัดเวรตรงวันลา</span>
       </div>
     </div>
 
@@ -213,7 +297,7 @@ table.e .x{background:none;border:0;color:#b91c1c;cursor:pointer;font-size:18px}
     <!-- settings -->
     <div class="page hidden" id="p-settings">
       <div class="tabs" id="stabs">
-        <button data-t="gen" class="on">ทั่วไป</button><button data-t="doc">รายชื่อแพทย์</button><button data-t="sh">ประเภทเวร/อัตรา</button><button data-t="hol">วันหยุด</button>
+        <button data-t="gen" class="on">ทั่วไป</button><button data-t="doc">รายชื่อแพทย์</button><button data-t="sh">เวรนอกเวลา/อัตรา</button><button data-t="rm">ห้องตรวจในเวลา</button><button data-t="hol">วันหยุด</button>
       </div>
       <div class="card" id="st-gen">
         <div class="frm">
@@ -231,6 +315,12 @@ table.e .x{background:none;border:0;color:#b91c1c;cursor:pointer;font-size:18px}
         <div class="hint">ลำดับแถว = ลำดับคอลัมน์ในตารางและไฟล์ Word · กลุ่ม/กลุ่มย่อยที่ติดกันจะถูกรวมหัวตารางให้อัตโนมัติ · "คอลัมน์ CSV" ใช้ตอนนำเข้าไฟล์ Excel (เช่น T, U, … Z)</div>
         <div style="overflow:auto"><table class="e" id="tSh"></table></div>
         <button class="btn" id="addSh" style="margin-top:10px">+ เพิ่มประเภทเวร</button>
+      </div>
+      <div class="card hidden" id="st-rm">
+        <div class="hint">คอลัมน์ของตารางเวรในเวลา (A–S) — แต่ละห้องมีเวรเช้า 8.30-12.00 และบ่าย 12.00-16.30 · ลำดับแถว = ลำดับคอลัมน์ · "CSV เช้า/บ่าย" = คอลัมน์ในไฟล์ Excel สำหรับนำเข้า</div>
+        <div style="overflow:auto"><table class="e" id="tRm"></table></div>
+        <button class="btn" id="addRm" style="margin-top:10px">+ เพิ่มห้อง</button>
+        <div class="frm" style="margin-top:16px"><label>คอลัมน์ "ลา" ใน CSV</label><input id="setLvCol" style="width:90px"></div>
       </div>
       <div class="card hidden" id="st-hol">
         <div class="hint">บรรทัดละ 1 วัน รูปแบบ <b>MM-DD|ชื่อวัน</b> = ทุกปี หรือ <b>YYYY-MM-DD|ชื่อวัน</b> (ปี ค.ศ.) = เฉพาะปีนั้น เช่น วันหยุดชดเชย/วันหยุดพิเศษ · ใช้ตอนสร้างเดือนใหม่ (เสาร์-อาทิตย์เป็นวันหยุดอัตโนมัติ)</div>
@@ -253,6 +343,7 @@ table.e .x{background:none;border:0;color:#b91c1c;cursor:pointer;font-size:18px}
     <div class="page hidden" id="p-help">
       <div class="card" style="line-height:1.75">
         <h3 style="margin-top:0">การจัดตารางเวรเดือนใหม่</h3>
+        <p>ลำดับแนะนำ: <b>แพทย์ประจำเดือน</b> (เลือกคน + วันลา) → <b>เวรนอกเวลา</b> (ตั้งวันหยุด + จัดเวร) → <b>เวรในเวลา</b> → กด <b>บันทึก</b> ด้านบน (บันทึกครั้งเดียวได้ทั้ง 3 หน้า)</p>
         <ol>
           <li>เลือกเดือนที่ช่องด้านบน — ถ้ายังไม่มีข้อมูล ระบบสร้างตารางว่างพร้อมวันหยุด (เสาร์-อาทิตย์ + รายการวันหยุดในตั้งค่า)</li>
           <li>คลิกที่ตัวเลขวันที่เพื่อสลับวันหยุด/วันทำการ (เช่น วันหยุดพิเศษ)</li>
@@ -269,9 +360,9 @@ table.e .x{background:none;border:0;color:#b91c1c;cursor:pointer;font-size:18px}
 <div id="toast"></div>
 <div id="busy" class="hidden"><div class="spin"></div></div>
 
-<script src="config.js?v=20261127b"></script>
+<script src="config.js?v=20261127c"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
-<script src="wordExport.js?v=20261127b"></script>
-<script src="app.js?v=20261127b"></script>
+<script src="wordExport.js?v=20261127c"></script>
+<script src="app.js?v=20261127c"></script>
 </body>
 </html>
