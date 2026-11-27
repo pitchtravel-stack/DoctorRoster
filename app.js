@@ -189,9 +189,41 @@
     if (!d) pool = await prevPool(k);
     S.cur = d || { month: k, days: {}, holidays: autoHolidays(k), note: '', isNew: true };
     normMonth(S.cur, pool);
+    S.prevNight = await prevMonthNight(k);
     S.dirty = false;
     renderAll();
   }
+  // เวรดึกเช้ามืดวันที่ 1 = เวรดึกที่บันทึกไว้ในวันสุดท้ายของเดือนก่อน
+  async function prevMonthNight(k) {
+    const [y, m] = k.split('-').map(Number), pk = m === 1 ? key(y - 1, 12) : key(y, m - 1);
+    if (!S.months.some(x => x.month === pk)) return null;
+    try {
+      const pm = await api('getMonth', { month: pk }); if (!pm || !pm.days) return null;
+      const last = pm.days[nDays(pk)] || {}, out = {};
+      nightShifts().forEach(s => { if (last[s.key]) out[s.key] = last[s.key]; });
+      return out;
+    } catch (e) { return null; }
+  }
+  const nightShifts = () => activeShifts().filter(s => WordExport.isNight(s));
+  function drawFirstNight() {
+    const box = $('firstNight'); if (!S.cur) return;
+    const ns = nightShifts(); if (!ns.length) { box.classList.add('hidden'); return; }
+    box.classList.remove('hidden');
+    const k = S.cur.month, [y, m] = k.split('-').map(Number), pk = m === 1 ? key(y - 1, 12) : key(y, m - 1);
+    const auto = S.prevNight, manual = S.cur.days[0] || {}, N = poolNames(), ed = can('admin', 'editor') && !auto;
+    $('fnTitle').textContent = `เวรดึก 00.30-08.30 ของวันที่ 1 (ต่อจากเวรบ่ายวันที่ ${nDays(pk)} ${label(pk)}) — ใช้ในไฟล์ Word`;
+    $('fnBody').innerHTML = ns.map(s => {
+      const v = (auto ? auto[s.key] : manual[s.key]) || '', list = v && !N.includes(v) ? N.concat([v]) : N;
+      return `<label>${esc([s.sub || s.group, s.label].filter(Boolean).join(' '))} <select data-k="${s.key}" class="msel" ${ed ? '' : 'disabled'}><option value=""></option>${list.map(n => `<option${n === v ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select></label>`;
+    }).join('') + `<span class="hint">${auto ? 'ดึงจากตารางเดือนก่อนอัตโนมัติ' : 'ยังไม่มีข้อมูลเดือนก่อนในระบบ — กรอกเอง'}</span>`;
+  }
+  $('fnBody').onchange = e => {
+    const s = e.target.closest('select'); if (!s) return;
+    S.cur.days[0] = S.cur.days[0] || {};
+    if (s.value) S.cur.days[0][s.dataset.k] = s.value; else delete S.cur.days[0][s.dataset.k];
+    if (!Object.keys(S.cur.days[0]).length) delete S.cur.days[0];
+    markDirty();
+  };
   async function prevPool(k) {
     const prev = S.months.map(x => x.month).filter(x => x < k).sort().pop();
     if (!prev) return null;
@@ -205,7 +237,7 @@
     [m.days, m.dayDays].forEach(o => Object.values(o).forEach(r => Object.values(r).forEach(n => { if (n && !seen.has(n)) { seen.add(n); m.pool.push({ name: n, on: true }); } })));
     Object.keys(m.leave).forEach(n => { if (!seen.has(n)) { seen.add(n); m.pool.push({ name: n, on: true }); } });
   }
-  function renderAll() { renderGrid(); drawPool(); drawDay(); setStatus(); }
+  function renderAll() { renderGrid(); drawFirstNight(); drawPool(); drawDay(); setStatus(); }
   const poolNames = () => S.cur.pool.filter(p => p.on && p.name).map(p => p.name);
   const onLeave = (n, d) => !!n && (S.cur.leave[n] || []).includes(Number(d));
 
@@ -311,7 +343,7 @@
   // ===================== WORD =====================
   $('btnWord').onclick = () => run(async () => {
     if (!window.docx) throw new Error('โหลดไลบรารี Word ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ต');
-    const doc = WordExport.buildRosterDoc(window.docx, { settings: S.settings, month: S.cur });
+    const doc = WordExport.buildRosterDoc(window.docx, { settings: S.settings, month: S.cur, firstNight: S.prevNight || null });
     const blob = await window.docx.Packer.toBlob(doc);
     const [y, m] = S.cur.month.split('-');
     download(blob, `ตารางเวรแพทย์นอกเวลาราชการ_${TH_M[m - 1]}_${y}.docx`);

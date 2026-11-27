@@ -64,10 +64,14 @@
     for (let d = 1; d <= nDays; d++) {
       const h = hol.has(d), fill = h ? HOL : undefined;
       const day = (m.days && m.days[d]) || {};
+      // เวรดึก 00.30-08.30 ของวันที่ d = คนที่ต่อจากเวรบ่ายของวันที่ d-1 (ในหน้าเว็บบันทึกไว้ที่วัน d-1)
+      // วันที่ 1 ใช้ข้อมูลวันสุดท้ายของเดือนก่อน (o.firstNight) หรือช่องที่กรอกเอง (days[0])
+      const prev = d === 1 ? Object.assign({}, (m.days && m.days[0]) || {}, o.firstNight || {}) : ((m.days && m.days[d - 1]) || {});
+      const val = s => isNight(s) ? (prev[s.key] || '') : (day[s.key] || '');
       rows.push(new D.TableRow({
         height: { value: 330, rule: D.HeightRule.ATLEAST },
         children: [cell(String(d), { w: DATE_W, bold: h, color: h ? 'C00000' : undefined, fill })]
-          .concat(shifts.map(s => cell(day[s.key] || '', { fill })))
+          .concat(shifts.map(s => cell(val(s), { fill })))
       }));
     }
 
@@ -156,6 +160,8 @@
     });
   }
 
+  const isNight = s => /^0?0[.:]?30/.test(String(s.time || '').trim());
+
   function runs(arr, keyFn) {
     const out = [];
     arr.forEach(x => {
@@ -166,7 +172,7 @@
     return out;
   }
 
-  const api = { buildRosterDoc, buildDayDoc, TH_MONTHS };
+  const api = { buildRosterDoc, buildDayDoc, isNight, TH_MONTHS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.WordExport = api;
 })(this);
