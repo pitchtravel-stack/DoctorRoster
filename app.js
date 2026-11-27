@@ -204,7 +204,7 @@
       return out;
     } catch (e) { return null; }
   }
-  const nightShifts = () => activeShifts().filter(s => WordExport.isNight(s));
+  const nightShifts = () => activeShifts().filter(s => WordExport.isNight(s) && !WordExport.WORD_SKIP.includes(s.key));
   function drawFirstNight() {
     const box = $('firstNight'); if (!S.cur) return;
     const ns = nightShifts(); if (!ns.length) { box.classList.add('hidden'); return; }

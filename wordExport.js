@@ -11,8 +11,8 @@
   function buildRosterDoc(D, o) {
     const st = o.settings, m = o.month;
     const FONT = st.font || DEFAULT_FONT;
-    // แบบฟอร์ม Word: ตัด OPD นอกเวลา และเรียงเวร ER เป็น ดึก-เช้า-บ่าย
-    const shifts = st.shifts.filter(s => s.active !== false && s.key !== 'OPD' && !/^OPD/.test(s.group || ''));
+    // แบบฟอร์ม Word: ตัด OPD นอกเวลา + เวรดึกฝั่งวอร์ด (WN) และเรียงเวร ER เป็น ดึก-เช้า-บ่าย
+    const shifts = st.shifts.filter(s => s.active !== false && !WORD_SKIP.includes(s.key) && !/^OPD/.test(s.group || ''));
     const en = shifts.findIndex(s => s.key === 'EN'), em = shifts.findIndex(s => s.key === 'EM');
     if (en > -1 && em > -1 && en > em) shifts.splice(em, 0, shifts.splice(en, 1)[0]);
     const [by, mm] = m.month.split('-').map(Number);
@@ -160,6 +160,7 @@
     });
   }
 
+  const WORD_SKIP = ['OPD', 'WN'];
   const isNight = s => /^0?0[.:]?30/.test(String(s.time || '').trim());
 
   function runs(arr, keyFn) {
@@ -172,7 +173,7 @@
     return out;
   }
 
-  const api = { buildRosterDoc, buildDayDoc, isNight, TH_MONTHS };
+  const api = { buildRosterDoc, buildDayDoc, isNight, WORD_SKIP, TH_MONTHS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.WordExport = api;
 })(this);
