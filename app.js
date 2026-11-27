@@ -299,10 +299,36 @@
     const sel = e.target.closest('select'); if (!sel) return;
     const d = sel.closest('tr').dataset.d;
     S.cur.days[d] = S.cur.days[d] || {};
+    const old = S.cur.days[d][sel.dataset.k] || '';
     if (sel.value) S.cur.days[d][sel.dataset.k] = sel.value; else delete S.cur.days[d][sel.dataset.k];
+    const linked = linkNight(d, sel.dataset.k, sel.value, old);
     if (onLeave(sel.value, d)) toast(`⚠ ${sel.value} ลาวันที่ ${d}`);
+    if (linked.length) { renderGrid(); drawFirstNight(); }
     markDirty(); checkConflicts();
   });
+  // รูปแบบเวร: วันธรรมดา 1 คน = ER บ่าย→ดึก · วันหยุด 2 คน = ER เช้า+บ่าย และ วอร์ด เช้า+บ่าย แล้วต่อ ER ดึก
+  function nightLinks(d, k) {
+    const hol = S.cur.holidays.map(Number).includes(Number(d));
+    if (!hol) return k === 'EA' ? ['EN'] : [];
+    return { EM: ['EA'], EA: ['EM'], WM: ['WA', 'EN'], WA: ['WM', 'EN'] }[k] || [];
+  }
+  function linkNight(d, k, val, old) {
+    const day = S.cur.days[d], done = [];
+    nightLinks(d, k).forEach(t => {
+      if (!activeShifts().some(s => s.key === t)) return;
+      const cur = day[t] || '';
+      if (!cur || cur === old) { if (val) day[t] = val; else delete day[t]; done.push(t); }
+    });
+    return done;
+  }
+  $('btnAutoNight').onclick = () => {
+    let c = 0;
+    for (let d = 1; d <= nDays(S.cur.month); d++) {
+      const day = S.cur.days[d]; if (!day) continue;
+      ['EA', 'EM', 'WM', 'WA'].forEach(k => { if (day[k]) nightLinks(d, k).forEach(t => { if (!day[t] && activeShifts().some(s => s.key === t)) { day[t] = day[k]; c++; } }); });
+    }
+    renderGrid(); markDirty(); toast(c ? `เติมให้ ${c} ช่อง` : 'ไม่มีช่องว่างที่ต้องเติม');
+  };
   $('grid').addEventListener('click', e => {
     const td = e.target.closest('td.d'); if (!td || !can('admin', 'editor')) return;
     const d = Number(td.parentElement.dataset.d);

@@ -266,6 +266,7 @@ table.e .x{background:none;border:0;color:#b91c1c;cursor:pointer;font-size:18px}
       <div class="bar">
         <span class="sp"></span>
         <button class="btn ed" id="btnImport">นำเข้า CSV จาก Excel</button>
+        <button class="btn ghost ed" id="btnAutoNight" title="วันธรรมดา: ER บ่าย → ER ดึก · วันหยุด: ER เช้า ↔ บ่าย, วอร์ด เช้า ↔ บ่าย → ER ดึก">เติมเวรต่อเนื่อง</button>
         <button class="btn ed" id="btnHolAuto" title="ตั้งวันหยุดใหม่จากเสาร์-อาทิตย์และรายการวันหยุด">รีเซ็ตวันหยุด</button>
         <button class="btn dan ed" id="btnClear">ล้างตาราง</button>
         <button class="btn" id="btnWord">⬇ Word</button>
@@ -282,6 +283,7 @@ table.e .x{background:none;border:0;color:#b91c1c;cursor:pointer;font-size:18px}
         <span><i style="background:var(--hol);border:1px solid #f5c2c2"></i>วันหยุด (คลิกที่วันที่เพื่อสลับวันหยุด/วันทำการ)</span>
         <span><i style="background:#fff7ed;border:1px solid #fdba74"></i>ชื่อซ้ำในช่วงเวลาเดียวกัน</span>
         <span><i style="background:#fee2e2;border:1px solid #fca5a5"></i>จัดเวรตรงวันลา</span>
+        <span>เลือกชื่อแล้วระบบเติมเวรต่อเนื่องให้: <b>วันธรรมดา</b> ER บ่าย → ER ดึก · <b>วันหยุด</b> ER เช้า ↔ บ่าย, วอร์ด เช้า ↔ บ่าย → ER ดึก (แก้ทับได้)</span>
       </div>
     </div>
 
@@ -364,9 +366,9 @@ table.e .x{background:none;border:0;color:#b91c1c;cursor:pointer;font-size:18px}
 <div id="toast"></div>
 <div id="busy" class="hidden"><div class="spin"></div></div>
 
-<script src="config.js?v=20261127f"></script>
+<script src="config.js?v=20261127g"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
-<script src="wordExport.js?v=20261127f"></script>
-<script src="app.js?v=20261127f"></script>
+<script src="wordExport.js?v=20261127g"></script>
+<script src="app.js?v=20261127g"></script>
 </body>
 </html>
