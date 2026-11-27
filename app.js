@@ -746,7 +746,17 @@
   // ===================== defaults =====================
   function normSettings(s) {
     const d = DEFAULT_SETTINGS(); s = s || {};
-    return { hospital: s.hospital || d.hospital, title: s.title || d.title, font: s.font || 'Sarabun', doctors: s.doctors || d.doctors, shifts: (s.shifts && s.shifts.length) ? s.shifts : d.shifts, rooms: (s.rooms && s.rooms.length) ? s.rooms : d.rooms, leaveCsvCol: s.leaveCsvCol || 'AA', holidays: s.holidays || d.holidays };
+    let shifts = (s.shifts && s.shifts.length) ? s.shifts.map(x => Object.assign({}, x)) : d.shifts;
+    if ((s.shiftsVer || 1) < 2 && s.shifts && s.shifts.length) shifts = migrateShifts(shifts);
+    return { shiftsVer: 2, hospital: s.hospital || d.hospital, title: s.title || d.title, font: s.font || 'Sarabun', doctors: s.doctors || d.doctors, shifts, rooms: (s.rooms && s.rooms.length) ? s.rooms : d.rooms, leaveCsvCol: s.leaveCsvCol || 'AA', holidays: s.holidays || d.holidays };
+  }
+  // v1.1.1: เรียงเวร ER เป็น ดึก-เช้า-บ่าย ตามแบบฟอร์มเดิม และตัด OPD นอกเวลา
+  function migrateShifts(sh) {
+    const en = sh.findIndex(x => x.key === 'EN'), em = sh.findIndex(x => x.key === 'EM');
+    if (en > -1 && em > -1 && en > em) { const [x] = sh.splice(en, 1); sh.splice(em, 0, x); }
+    const op = sh.findIndex(x => x.key === 'OPD');
+    if (op > -1) { const [x] = sh.splice(op, 1); x.active = false; sh.push(x); }
+    return sh;
   }
   function DEFAULT_SETTINGS() {
     return {
@@ -756,10 +766,10 @@
         { key: 'WM', group: 'แพทย์วอร์ด', sub: 'IPD/LR', label: 'เช้า', time: '8.30-16.30', rate: 1200, csvCol: 'T', active: true },
         { key: 'WA', group: 'แพทย์วอร์ด', sub: 'IPD/LR', label: 'บ่าย', time: '16.30-00.30', rate: 1200, csvCol: 'U', active: true },
         { key: 'WN', group: 'แพทย์วอร์ด', sub: 'IPD/LR', label: 'ดึก', time: '00.30-08.30', rate: 1200, csvCol: 'Z', active: true },
-        { key: 'OPD', group: 'OPD นอกเวลา', sub: '', label: '', time: '8.30-16.30', rate: 2200, csvCol: 'V', active: true },
+        { key: 'EN', group: 'แพทย์เวร', sub: 'ER', label: 'ดึก', time: '00.30-08.30', rate: 1200, csvCol: 'Y', active: true },
         { key: 'EM', group: 'แพทย์เวร', sub: 'ER', label: 'เช้า', time: '8.30-16.30', rate: 2200, csvCol: 'W', active: true },
         { key: 'EA', group: 'แพทย์เวร', sub: 'ER', label: 'บ่าย', time: '16.30-00.30', rate: 2200, csvCol: 'X', active: true },
-        { key: 'EN', group: 'แพทย์เวร', sub: 'ER', label: 'ดึก', time: '00.30-08.30', rate: 1200, csvCol: 'Y', active: true }
+        { key: 'OPD', group: 'OPD นอกเวลา', sub: '', label: '', time: '8.30-16.30', rate: 2200, csvCol: 'V', active: false }
       ],
       rooms: DEFAULT_ROOMS(), leaveCsvCol: 'AA',
       holidays: ['01-01|วันขึ้นปีใหม่', '04-06|วันจักรี', '04-13|สงกรานต์', '04-14|สงกรานต์', '04-15|สงกรานต์', '05-01|วันแรงงาน', '05-04|วันฉัตรมงคล', '06-03|วันเฉลิมฯ พระราชินี', '07-28|วันเฉลิมฯ ร.10', '08-12|วันแม่แห่งชาติ', '10-13|วันนวมินทรมหาราช', '10-23|วันปิยมหาราช', '12-05|วันพ่อแห่งชาติ', '12-10|วันรัฐธรรมนูญ', '12-31|วันสิ้นปี', '2026-12-07|ชดเชยวันพ่อแห่งชาติ']

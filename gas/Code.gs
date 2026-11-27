@@ -5,7 +5,7 @@
  *
  * วิธีติดตั้ง: ดู README.md
  */
-const APP_VERSION = 'v1.1.0';
+const APP_VERSION = 'v1.1.1';
 const SESSION_HOURS = 4;
 const OTP_MINUTES = 10;
 const OTP_MAX_TRY = 5;
@@ -20,15 +20,16 @@ const SH = { USERS: 'Users', SETTINGS: 'Settings', MONTHS: 'Months', LOG: 'Log' 
 const DEFAULT_SETTINGS = {
   hospital: 'โรงพยาบาลร้องกวาง',
   title: 'ตารางเวรแพทย์นอกเวลาราชการ',
+  shiftsVer: 2,
   doctors: ['พสิษฐ์', 'ตรีรัตน์', 'ภาณุวัฒน์', 'ชนาพร', 'นภัสสร', 'อาทิตย์', 'พิม', 'ชนกนันท์', 'วิทวัส', 'อาทิตยา', 'อธิศีล', 'ไผ่ตรง'],
   shifts: [
     { key: 'WM', group: 'แพทย์วอร์ด', sub: 'IPD/LR', label: 'เช้า', time: '8.30-16.30', rate: 1200, csvCol: 'T', active: true },
     { key: 'WA', group: 'แพทย์วอร์ด', sub: 'IPD/LR', label: 'บ่าย', time: '16.30-00.30', rate: 1200, csvCol: 'U', active: true },
     { key: 'WN', group: 'แพทย์วอร์ด', sub: 'IPD/LR', label: 'ดึก', time: '00.30-08.30', rate: 1200, csvCol: 'Z', active: true },
-    { key: 'OPD', group: 'OPD นอกเวลา', sub: '', label: '', time: '8.30-16.30', rate: 2200, csvCol: 'V', active: true },
+    { key: 'EN', group: 'แพทย์เวร', sub: 'ER', label: 'ดึก', time: '00.30-08.30', rate: 1200, csvCol: 'Y', active: true },
     { key: 'EM', group: 'แพทย์เวร', sub: 'ER', label: 'เช้า', time: '8.30-16.30', rate: 2200, csvCol: 'W', active: true },
     { key: 'EA', group: 'แพทย์เวร', sub: 'ER', label: 'บ่าย', time: '16.30-00.30', rate: 2200, csvCol: 'X', active: true },
-    { key: 'EN', group: 'แพทย์เวร', sub: 'ER', label: 'ดึก', time: '00.30-08.30', rate: 1200, csvCol: 'Y', active: true }
+    { key: 'OPD', group: 'OPD นอกเวลา', sub: '', label: '', time: '8.30-16.30', rate: 2200, csvCol: 'V', active: false }
   ],
   // MM-DD = ทุกปี, YYYY-MM-DD (ค.ศ.) = เฉพาะปี
   holidays: [
@@ -183,17 +184,31 @@ function setSetting_(key, val) {
 
 function getSettings_() { return getSetting_('settings') || DEFAULT_SETTINGS; }
 
+// Sheets อาจแปลง "2569-12" เป็นวันที่ → อ่านกลับเป็น key เดิมเสมอ
+function keyOf_(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM');
+  return String(v || '').trim().replace(/^'/, '');
+}
+
+// คืนแถวล่าสุดของเดือนนั้น (+ รายการแถวซ้ำ)
 function monthRow_(month) {
   const s = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SH.MONTHS);
   const v = s.getDataRange().getValues();
-  for (let i = 1; i < v.length; i++) if (String(v[i][0]) === month) return { s, row: i + 1, v: v[i] };
-  return { s, row: 0 };
+  const rows = [];
+  for (let i = 1; i < v.length; i++) if (keyOf_(v[i][0]) === month) rows.push(i + 1);
+  if (!rows.length) return { s, row: 0, dups: [] };
+  const last = rows[rows.length - 1];
+  return { s, row: last, v: v[last - 1], dups: rows.slice(0, -1) };
 }
 
 function listMonths_() {
   const s = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SH.MONTHS);
-  return s.getDataRange().getValues().slice(1).filter(r => r[0])
-    .map(r => ({ month: String(r[0]), updatedBy: r[2], updatedAt: r[3] ? new Date(r[3]).getTime() : 0 }));
+  const map = {};
+  s.getDataRange().getValues().slice(1).filter(r => r[0]).forEach(r => {
+    const k = keyOf_(r[0]);
+    map[k] = { month: k, updatedBy: r[2], updatedAt: r[3] ? new Date(r[3]).getTime() : 0 };
+  });
+  return Object.keys(map).sort().map(k => map[k]);
 }
 
 function getMonth_(month) {
@@ -214,9 +229,11 @@ function saveMonth_(data, baseUpdatedAt, user) {
     }
     const clean = { month: data.month, days: data.days || {}, dayDays: data.dayDays || {}, leave: data.leave || {}, pool: data.pool || [], holidays: data.holidays || [], note: data.note || '' };
     const now = new Date();
-    const row = [data.month, JSON.stringify(clean), user.email, now];
-    if (m.row) m.s.getRange(m.row, 1, 1, 4).setValues([row]);
-    else m.s.appendRow(row);
+    const row = ["'" + data.month, JSON.stringify(clean), user.email, now];
+    if (m.row) {
+      m.s.getRange(m.row, 1, 1, 4).setValues([row]);
+      m.dups.slice().reverse().forEach(r => m.s.deleteRow(r)); // ลบแถวซ้ำเก่า
+    } else m.s.appendRow(row);
     log_(user.email, 'saveMonth', data.month);
     clean.updatedBy = user.email; clean.updatedAt = now.getTime();
     return clean;
@@ -225,7 +242,7 @@ function saveMonth_(data, baseUpdatedAt, user) {
 
 function deleteMonth_(month, user) {
   const m = monthRow_(String(month));
-  if (m.row) m.s.deleteRow(m.row);
+  if (m.row) m.dups.concat([m.row]).sort((a, b) => b - a).forEach(r => m.s.deleteRow(r));
   log_(user.email, 'deleteMonth', month);
   return true;
 }
