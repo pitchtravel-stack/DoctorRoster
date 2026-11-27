@@ -248,6 +248,7 @@ table.e .x{background:none;border:0;color:#b91c1c;cursor:pointer;font-size:18px}
         <label class="hint"><input type="checkbox" id="showHol"> แสดงวันหยุด</label>
         <span class="sp"></span>
         <button class="btn ed" id="btnImport2">นำเข้า CSV จาก Excel</button>
+        <button class="btn ed" id="btnFixed" title="ER–พสิษฐ์, NCD1–ตรีรัตน์, NCD2–ภาณุวัฒน์ (แก้ได้ที่ตั้งค่า → ห้องตรวจในเวลา)">ใส่แพทย์ประจำห้อง</button>
         <button class="btn ghost ed" id="btnPattern">ใช้รูปแบบสัปดาห์แรกทั้งเดือน</button>
         <button class="btn dan ed" id="btnDayClear">ล้างตาราง</button>
         <button class="btn" id="btnDayWord">⬇ Word</button>
@@ -257,7 +258,7 @@ table.e .x{background:none;border:0;color:#b91c1c;cursor:pointer;font-size:18px}
       <div class="legend">
         <span><i style="background:#fee2e2;border:1px solid #fca5a5"></i>จัดเวรตรงวันลา</span>
         <span><i style="background:#fff7ed;border:1px solid #fdba74"></i>คนเดียวกันอยู่ 2 ห้องในช่วงเวลาเดียวกัน</span>
-        <span>คลิก <b>ชื่อห้อง</b> = ใส่คนเดียวทั้งเดือน · คลิก <b>วันที่</b> หรือ ⋯ = คัดลอกแถว · คลิกช่อง <b>ลา</b> = แก้ผู้ลา · วันหยุด/วันทำการ ตั้งที่หน้าเวรนอกเวลา (คลิกวันที่)</span>
+        <span>คลิก <b>ชื่อห้อง</b> = ใส่คนเดียวทั้งเดือน/รายสัปดาห์ (เช่น วอร์ด) · คลิก <b>วันที่</b> หรือ ⋯ = คัดลอกแถว · คลิกช่อง <b>ลา</b> = แก้ผู้ลา · วันหยุด/วันทำการ ตั้งที่หน้าเวรนอกเวลา (คลิกวันที่)</span>
       </div>
     </div>
 
@@ -366,9 +367,9 @@ table.e .x{background:none;border:0;color:#b91c1c;cursor:pointer;font-size:18px}
 <div id="toast"></div>
 <div id="busy" class="hidden"><div class="spin"></div></div>
 
-<script src="config.js?v=20261127g"></script>
+<script src="config.js?v=20261127h"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
-<script src="wordExport.js?v=20261127g"></script>
-<script src="app.js?v=20261127g"></script>
+<script src="wordExport.js?v=20261127h"></script>
+<script src="app.js?v=20261127h"></script>
 </body>
 </html>

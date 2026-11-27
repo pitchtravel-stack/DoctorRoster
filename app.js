@@ -624,9 +624,11 @@
   }
   function fillRoom(rk) {
     const r = activeRooms().find(x => x.k === rk), N = poolNames();
-    const m = modal(`<h3>ใส่คนเดียวทั้งเดือน — ${esc(r.name)} ${esc(r.room)}</h3><div class="hint">ใส่ทุกวันทำการ (ข้ามวันหยุดและวันที่แพทย์คนนั้นลา)</div>
+    const nw = weekNo(nDays(S.cur.month)), wkOpts = Array.from({ length: nw }, (_, i) => i + 1).filter(w => workDays().some(d => weekNo(d) === w));
+    const m = modal(`<h3>ใส่คนเดียวกัน — ${esc(r.name)} ${esc(r.room)}</h3><div class="hint">ใส่ทุกวันทำการในช่วงที่เลือก (ข้ามวันหยุดและวันที่แพทย์คนนั้นลา)</div>
       <div style="display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center;margin:14px 0">
       <label>แพทย์</label><select id="fN" class="msel">${N.map(n => `<option>${esc(n)}</option>`).join('')}</select>
+      <label>ช่วงวันที่</label><select id="fR" class="msel"><option value="all">ทั้งเดือน</option>${wkOpts.map(w => { const ds = workDays().filter(d => weekNo(d) === w); return `<option value="${w}">สัปดาห์ ${w} (${ds[0]}–${ds[ds.length - 1]})</option>`; }).join('')}</select>
       <label>ช่วงเวลา</label><select id="fH" class="msel"><option value="MA">เช้า + บ่าย</option><option value="M">เช้า</option><option value="A">บ่าย</option></select>
       <label>เฉพาะวัน</label><div>${[1, 2, 3, 4, 5].map(w => `<label style="margin-right:8px"><input type="checkbox" class="fW" value="${w}" checked>${TH_D[w]}</label>`).join('')}</div>
       <label>ช่องที่มีชื่อแล้ว</label><select id="fO" class="msel"><option value="0">ไม่ทับ</option><option value="1">ทับ</option></select></div>
@@ -634,8 +636,8 @@
     m.onclick = e => {
       const b = e.target;
       if (b.dataset.ok != null) {
-        const n = $('fN').value, hs = $('fH').value.split(''), ov = $('fO').value === '1', ws = [...m.querySelectorAll('.fW:checked')].map(x => +x.value); let c = 0, sk = 0;
-        workDays().filter(d => ws.includes(wday(S.cur.month, d))).forEach(d => {
+        const n = $('fN').value, hs = $('fH').value.split(''), ov = $('fO').value === '1', ws = [...m.querySelectorAll('.fW:checked')].map(x => +x.value), rg = $('fR').value; let c = 0, sk = 0;
+        workDays().filter(d => ws.includes(wday(S.cur.month, d)) && (rg === 'all' || weekNo(d) === +rg)).forEach(d => {
           if (onLeave(n, d)) { sk++; return; }
           S.cur.dayDays[d] = S.cur.dayDays[d] || {};
           hs.forEach(h => { const k = rk + '_' + h; if (ov || !S.cur.dayDays[d][k]) { S.cur.dayDays[d][k] = n; c++; } });
@@ -644,6 +646,21 @@
       } else if (b.dataset.x != null || b === m) m.remove();
     };
   }
+  // จัดแพทย์ประจำห้องอัตโนมัติ (ตั้งค่า → ห้องตรวจในเวลา → แพทย์ประจำ) — เติมเฉพาะช่องว่าง ข้ามวันลา
+  $('btnFixed').onclick = () => {
+    const rooms = activeRooms().filter(r => r.fixed);
+    if (!rooms.length) return toast('ยังไม่ได้กำหนด "แพทย์ประจำ" ในตั้งค่า → ห้องตรวจในเวลา');
+    const N = poolNames(), off = rooms.filter(r => !N.includes(r.fixed));
+    if (!confirm('ใส่แพทย์ประจำห้องทุกวันทำการ (เช้า+บ่าย) เฉพาะช่องที่ยังว่าง และเว้นว่างวันที่ลา:\n\n' + rooms.map(r => `• ${r.name} ${r.room} — ${r.fixed}${N.includes(r.fixed) ? '' : ' (ไม่ได้ขึ้นเวรเดือนนี้ – ข้าม)'}`).join('\n'))) return;
+    let c = 0; const sk = [];
+    rooms.filter(r => N.includes(r.fixed)).forEach(r => workDays().forEach(d => {
+      if (onLeave(r.fixed, d)) { sk.push(`${r.fixed} ${d}`); return; }
+      S.cur.dayDays[d] = S.cur.dayDays[d] || {};
+      ['M', 'A'].forEach(h => { const k = r.k + '_' + h; if (!S.cur.dayDays[d][k]) { S.cur.dayDays[d][k] = r.fixed; c++; } });
+    }));
+    markDirty(); drawDay();
+    toast(`ใส่ ${c} ช่อง${sk.length ? ` · เว้นว่างวันลา: ${sk.join(', ')}` : ''}${off.length ? ` · ข้าม ${off.map(r => r.fixed).join(', ')}` : ''}`, 6000);
+  };
   $('btnPattern').onclick = () => {
     if (!confirm('คัดลอกรูปแบบของสัปดาห์แรก (จ.–ศ.) ไปยังช่องที่ยังว่างทั้งเดือน ตามวันในสัปดาห์? (ข้ามวันลา)')) return;
     const tpl = {}; workDays().filter(d => weekNo(d) === 1).forEach(d => tpl[wday(S.cur.month, d)] = S.cur.dayDays[d] || {});
@@ -757,7 +774,7 @@
   };
   $('addSh').onclick = () => { draft.shifts.push({ key: 'S' + Date.now().toString(36), group: '', sub: '', label: '', time: '', rate: 0, csvCol: '', active: true }); drawShifts(); };
 
-  const RM_F = [['name', 'ชื่อย่อ'], ['room', 'ห้อง/ตำแหน่ง'], ['duty', 'หน้าที่'], ['colM', 'CSV เช้า'], ['colA', 'CSV บ่าย']];
+  const RM_F = [['name', 'ชื่อย่อ'], ['room', 'ห้อง/ตำแหน่ง'], ['duty', 'หน้าที่'], ['fixed', 'แพทย์ประจำ'], ['colM', 'CSV เช้า'], ['colA', 'CSV บ่าย']];
   function drawRooms() {
     $('tRm').innerHTML = '<tr><th>#</th>' + RM_F.map(f => `<th>${f[1]}</th>`).join('') + '<th>ใช้งาน</th><th style="width:120px"></th></tr>' +
       draft.rooms.map((r, i) => `<tr><td>${i + 1}</td>${RM_F.map(([f]) => `<td><input data-i="${i}" data-f="${f}" value="${esc(r[f])}" ${/^col/.test(f) ? 'style="width:70px"' : ''}></td>`).join('')}
@@ -805,7 +822,7 @@
   function normSettings(s) {
     const d = DEFAULT_SETTINGS(); s = s || {};
     const shifts = (s.shifts && s.shifts.length) ? s.shifts : d.shifts;
-    return { hospital: s.hospital || d.hospital, title: s.title || d.title, font: s.font || 'Sarabun', doctors: s.doctors || d.doctors, shifts, rooms: (s.rooms && s.rooms.length) ? s.rooms : d.rooms, leaveCsvCol: s.leaveCsvCol || 'AA', holidays: s.holidays || d.holidays };
+    return { hospital: s.hospital || d.hospital, title: s.title || d.title, font: s.font || 'Sarabun', doctors: s.doctors || d.doctors, shifts, rooms: (s.rooms && s.rooms.length) ? s.rooms.map(r => r.fixed === undefined ? Object.assign({}, r, { fixed: (d.rooms.find(x => x.k === r.k) || {}).fixed || '' }) : r) : d.rooms, leaveCsvCol: s.leaveCsvCol || 'AA', holidays: s.holidays || d.holidays };
   }
   function DEFAULT_SETTINGS() {
     return {
@@ -826,9 +843,9 @@
   }
   function DEFAULT_ROOMS() {
     return [
-      { k: 'ER', name: 'ER', room: 'ห้องอุบัติเหตุฉุกเฉิน', duty: 'ER/MC/1st Autopsy', colM: 'B', colA: 'C', active: true },
-      { k: 'NCD1', name: 'NCD1', room: 'ห้องตรวจโรค 1', duty: 'NCD/HD/CAPD', colM: 'D', colA: 'E', active: true },
-      { k: 'NCD2', name: 'NCD2', room: 'ห้องตรวจโรค 2', duty: 'NCD/ARV/TB/ConWard', colM: 'F', colA: 'G', active: true },
+      { k: 'ER', name: 'ER', room: 'ห้องอุบัติเหตุฉุกเฉิน', duty: 'ER/MC/1st Autopsy', fixed: 'พสิษฐ์', colM: 'B', colA: 'C', active: true },
+      { k: 'NCD1', name: 'NCD1', room: 'ห้องตรวจโรค 1', duty: 'NCD/HD/CAPD', fixed: 'ตรีรัตน์', colM: 'D', colA: 'E', active: true },
+      { k: 'NCD2', name: 'NCD2', room: 'ห้องตรวจโรค 2', duty: 'NCD/ARV/TB/ConWard', fixed: 'ภาณุวัฒน์', colM: 'F', colA: 'G', active: true },
       { k: 'ARI', name: 'ARI', room: 'ARI', duty: 'ARI/OPD1', colM: 'H', colA: 'I', active: true },
       { k: 'OPD1', name: 'OPD1', room: 'ห้องตรวจโรค 4', duty: 'OPD1', colM: 'J', colA: 'K', active: true },
       { k: 'OPD2', name: 'OPD1', room: 'ห้องตรวจโรค 4', duty: 'OPD1 / AUDIT (บ่าย on call)', colM: 'L', colA: 'M', active: true },
