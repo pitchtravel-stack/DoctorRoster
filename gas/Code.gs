@@ -20,16 +20,15 @@ const SH = { USERS: 'Users', SETTINGS: 'Settings', MONTHS: 'Months', LOG: 'Log' 
 const DEFAULT_SETTINGS = {
   hospital: 'โรงพยาบาลร้องกวาง',
   title: 'ตารางเวรแพทย์นอกเวลาราชการ',
-  shiftsVer: 2,
   doctors: ['พสิษฐ์', 'ตรีรัตน์', 'ภาณุวัฒน์', 'ชนาพร', 'นภัสสร', 'อาทิตย์', 'พิม', 'ชนกนันท์', 'วิทวัส', 'อาทิตยา', 'อธิศีล', 'ไผ่ตรง'],
   shifts: [
     { key: 'WM', group: 'แพทย์วอร์ด', sub: 'IPD/LR', label: 'เช้า', time: '8.30-16.30', rate: 1200, csvCol: 'T', active: true },
     { key: 'WA', group: 'แพทย์วอร์ด', sub: 'IPD/LR', label: 'บ่าย', time: '16.30-00.30', rate: 1200, csvCol: 'U', active: true },
     { key: 'WN', group: 'แพทย์วอร์ด', sub: 'IPD/LR', label: 'ดึก', time: '00.30-08.30', rate: 1200, csvCol: 'Z', active: true },
-    { key: 'EN', group: 'แพทย์เวร', sub: 'ER', label: 'ดึก', time: '00.30-08.30', rate: 1200, csvCol: 'Y', active: true },
+    { key: 'OPD', group: 'OPD นอกเวลา', sub: '', label: '', time: '8.30-16.30', rate: 2200, csvCol: 'V', active: true },
     { key: 'EM', group: 'แพทย์เวร', sub: 'ER', label: 'เช้า', time: '8.30-16.30', rate: 2200, csvCol: 'W', active: true },
     { key: 'EA', group: 'แพทย์เวร', sub: 'ER', label: 'บ่าย', time: '16.30-00.30', rate: 2200, csvCol: 'X', active: true },
-    { key: 'OPD', group: 'OPD นอกเวลา', sub: '', label: '', time: '8.30-16.30', rate: 2200, csvCol: 'V', active: false }
+    { key: 'EN', group: 'แพทย์เวร', sub: 'ER', label: 'ดึก', time: '00.30-08.30', rate: 1200, csvCol: 'Y', active: true }
   ],
   // MM-DD = ทุกปี, YYYY-MM-DD (ค.ศ.) = เฉพาะปี
   holidays: [

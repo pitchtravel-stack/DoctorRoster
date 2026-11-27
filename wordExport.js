@@ -11,7 +11,10 @@
   function buildRosterDoc(D, o) {
     const st = o.settings, m = o.month;
     const FONT = st.font || DEFAULT_FONT;
-    const shifts = st.shifts.filter(s => s.active !== false);
+    // แบบฟอร์ม Word: ตัด OPD นอกเวลา และเรียงเวร ER เป็น ดึก-เช้า-บ่าย
+    const shifts = st.shifts.filter(s => s.active !== false && s.key !== 'OPD' && !/^OPD/.test(s.group || ''));
+    const en = shifts.findIndex(s => s.key === 'EN'), em = shifts.findIndex(s => s.key === 'EM');
+    if (en > -1 && em > -1 && en > em) shifts.splice(em, 0, shifts.splice(en, 1)[0]);
     const [by, mm] = m.month.split('-').map(Number);
     const nDays = new Date(by - 543, mm, 0).getDate();
     const hol = new Set((m.holidays || []).map(Number));
