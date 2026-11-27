@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ตารางเวรแพทย์นอกเวลาราชการ | รพ.ร้องกวาง</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#1d4ed8;--blue2:#2563eb;--blue-l:#eff6ff;--blue-m:#dbeafe;--ink:#0f172a;--mut:#64748b;--line:#e2e8f0;--bg:#f5f8fc;--red:#c00000;--hol:#fdecec;--ok:#15803d;--warn:#b45309}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Sarabun',sans-serif;color:var(--ink);background:var(--bg);font-size:15px}
+button,input,select,textarea{font-family:inherit;font-size:15px}
+.hidden{display:none!important}
+/* login */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#1e3a8a,#2563eb 60%,#60a5fa)}
+.lcard{background:#fff;border-radius:16px;padding:32px 28px;width:100%;max-width:380px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.lcard h1{font-size:21px;margin:0 0 4px;color:var(--blue)}
+.lcard p{margin:0 0 20px;color:var(--mut);font-size:14px}
+.lcard label{display:block;font-size:14px;font-weight:600;margin:12px 0 6px}
+.lcard input{width:100%;padding:11px 12px;border:1px solid #cbd5e1;border-radius:10px}
+.lcard input.otp{font-size:24px;letter-spacing:8px;text-align:center}
+.msg{font-size:14px;margin-top:12px;min-height:20px}
+.msg.err{color:var(--red)} .msg.ok{color:var(--ok)}
+.ver{font-size:12px;color:var(--mut);text-align:center;margin-top:16px}
+/* buttons */
+.btn{border:0;border-radius:10px;padding:9px 14px;cursor:pointer;background:var(--blue-m);color:var(--blue);font-weight:600;white-space:nowrap}
+.btn:hover{filter:brightness(.96)}
+.btn.pri{background:var(--blue2);color:#fff}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn.dan{background:#fee2e2;color:#b91c1c}
+.btn.full{width:100%;margin-top:16px;padding:12px}
+.btn:disabled{opacity:.5;cursor:default}
+.link{background:none;border:0;color:var(--blue);cursor:pointer;padding:0;margin-top:10px;font-size:14px}
+/* layout */
+#app{display:flex;min-height:100vh}
+#side{width:240px;background:#0f2a6b;color:#dbe6ff;display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:30;transition:transform .2s}
+.brand{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.12)}
+.brand b{display:block;color:#fff;font-size:16px}
+.brand span{font-size:13px;opacity:.75}
+.nav{padding:10px 8px;flex:1}
+.nav a{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;color:#dbe6ff;text-decoration:none;cursor:pointer;margin-bottom:2px}
+.nav a:hover{background:rgba(255,255,255,.08)}
+.nav a.on{background:#2563eb;color:#fff}
+.nav .ic{width:20px;text-align:center}
+.who{padding:14px 16px;border-top:1px solid rgba(255,255,255,.12);font-size:13px}
+.who b{color:#fff;display:block;word-break:break-all}
+.who .btn{margin-top:8px;background:rgba(255,255,255,.12);color:#fff;width:100%}
+.side-ver{font-size:12px;opacity:.6;padding:0 16px 12px}
+#main{flex:1;margin-left:240px;min-width:0}
+.top{display:flex;align-items:center;gap:10px;padding:14px 22px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.top h2{margin:0;font-size:18px;flex:1}
+#burger{display:none;background:none;border:0;font-size:24px;cursor:pointer;padding:0 6px}
+.demo{background:#fef3c7;color:#92400e;font-size:13px;padding:4px 10px;border-radius:999px}
+.page{padding:20px 22px 60px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.bar .sp{flex:1}
+.mon{display:flex;align-items:center;gap:6px}
+.mon select{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;font-weight:600}
+.status{font-size:13px;color:var(--mut)}
+.status.dirty{color:var(--warn);font-weight:600}
+/* roster grid */
+.gridwrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff;max-height:calc(100vh - 230px)}
+table.g{border-collapse:separate;border-spacing:0;width:100%;min-width:860px}
+table.g th,table.g td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center;padding:3px 4px}
+table.g thead th{background:var(--blue-l);position:sticky;z-index:2;font-size:14px;font-weight:600}
+table.g thead tr:nth-child(1) th{top:0;height:30px}
+table.g thead tr:nth-child(2) th{top:30px;height:28px}
+table.g thead tr:nth-child(3) th{top:58px;height:26px}
+table.g thead tr:nth-child(4) th{top:84px;font-weight:400;font-size:12.5px;color:var(--mut)}
+table.g td.d{width:84px;cursor:pointer;user-select:none;font-weight:600}
+table.g td.d small{display:block;font-weight:400;font-size:11.5px;color:var(--mut)}
+table.g tr.hol td{background:var(--hol)}
+table.g tr.hol td.d{color:var(--red)}
+table.g td select{width:100%;min-width:96px;border:1px solid transparent;background:transparent;padding:5px 2px;border-radius:8px;text-align:center;text-align-last:center;cursor:pointer}
+table.g td select:hover{border-color:#bfdbfe;background:#fff}
+table.g td select:focus{outline:2px solid var(--blue2)}
+table.g td select.ro{pointer-events:none}
+table.g td.cf select{background:#fff7ed;border-color:#fdba74}
+table.g td.sum{font-size:12.5px;color:var(--mut);white-space:nowrap}
+.legend{font-size:13px;color:var(--mut);margin-top:10px;display:flex;gap:16px;flex-wrap:wrap}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px}
+.note-in{display:flex;gap:8px;align-items:center;margin-top:12px}
+.note-in input{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:10px}
+/* summary */
+table.s{border-collapse:collapse;width:100%}
+table.s th,table.s td{border:1px solid var(--line);padding:7px 8px;text-align:center}
+table.s th{background:var(--blue-l);font-weight:600;font-size:14px}
+table.s td.n{text-align:left}
+table.s td.m{text-align:right;font-variant-numeric:tabular-nums}
+table.s tfoot td{font-weight:700;background:#f8fafc}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.kpi span{font-size:13px;color:var(--mut)} .kpi b{display:block;font-size:24px;color:var(--blue)}
+/* settings */
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;cursor:pointer}
+.tabs button.on{background:var(--blue2);color:#fff;border-color:var(--blue2)}
+table.e{border-collapse:collapse;width:100%}
+table.e th{font-size:13px;color:var(--mut);text-align:left;padding:6px;border-bottom:1px solid var(--line)}
+table.e td{padding:4px 6px;border-bottom:1px solid #f1f5f9}
+table.e input,table.e select{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:8px}
+table.e input[type=checkbox]{width:auto}
+table.e .x{background:none;border:0;color:#b91c1c;cursor:pointer;font-size:18px}
+.hint{font-size:13px;color:var(--mut);margin:6px 0 12px}
+.frm{display:grid;grid-template-columns:160px 1fr;gap:10px 14px;align-items:center;max-width:640px}
+.frm input{padding:8px 10px;border:1px solid var(--line);border-radius:8px}
+/* modal & toast */
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
+.modal{background:#fff;border-radius:14px;padding:20px;width:100%;max-width:520px;max-height:90vh;overflow:auto}
+.modal h3{margin:0 0 10px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 18px;border-radius:10px;z-index:80;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.show{opacity:1}
+#busy{position:fixed;inset:0;background:rgba(255,255,255,.55);z-index:70;display:flex;align-items:center;justify-content:center}
+.spin{width:38px;height:38px;border:4px solid var(--blue-m);border-top-color:var(--blue2);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.overlay{display:none}
+@media(max-width:860px){
+  #side{transform:translateX(-100%)} #side.open{transform:none}
+  .overlay.open{display:block;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:25}
+  #main{margin-left:0} #burger{display:block} .page{padding:14px 10px 60px} .top{padding:12px 12px}
+  .frm{grid-template-columns:1fr}
+}
+@media print{
+  #side,.top,.bar,.legend,.note-in,.noprint{display:none!important}
+  #main{margin:0} .page{padding:0} .card{border:0;padding:0}
+  .gridwrap{max-height:none;overflow:visible;border:0}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<section id="login" class="hidden">
+  <div class="lcard">
+    <h1>ตารางเวรแพทย์นอกเวลาราชการ</h1>
+    <p>โรงพยาบาลร้องกวาง — เข้าสู่ระบบด้วย Gmail + รหัส OTP</p>
+    <div id="stepEmail">
+      <label for="email">อีเมล (Gmail)</label>
+      <input id="email" type="email" placeholder="name@gmail.com" autocomplete="email">
+      <button class="btn pri full" id="btnOtp">ขอรหัส OTP</button>
+    </div>
+    <div id="stepOtp" class="hidden">
+      <label for="otp">รหัส OTP 6 หลัก (ส่งไปที่ <span id="otpTo"></span>)</label>
+      <input id="otp" class="otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+      <button class="btn pri full" id="btnVerify">เข้าสู่ระบบ</button>
+      <button class="link" id="btnBack">← เปลี่ยนอีเมล / ขอรหัสใหม่</button>
+    </div>
+    <div class="msg" id="lmsg"></div>
+    <div class="ver" id="lver"></div>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="app" class="hidden">
+  <aside id="side">
+    <div class="brand"><b>ตารางเวรแพทย์</b><span>นอกเวลาราชการ · รพ.ร้องกวาง</span></div>
+    <nav class="nav" id="nav">
+      <a data-p="roster"><span class="ic">📅</span>ตารางเวรรายเดือน</a>
+      <a data-p="summary"><span class="ic">💰</span>สรุปค่าตอบแทน</a>
+      <a data-p="settings" data-role="admin"><span class="ic">⚙️</span>ตั้งค่า</a>
+      <a data-p="users" data-role="admin"><span class="ic">👥</span>ผู้ใช้งาน</a>
+      <a data-p="help"><span class="ic">❓</span>วิธีใช้</a>
+    </nav>
+    <div class="who"><span id="whoRole"></span><b id="whoName"></b><button class="btn" id="btnLogout">ออกจากระบบ</button></div>
+    <div class="side-ver" id="sver"></div>
+  </aside>
+  <div class="overlay" id="ovl"></div>
+  <main id="main">
+    <div class="top"><button id="burger" aria-label="เมนู">☰</button><h2 id="ptitle"></h2><span class="demo hidden" id="demoTag">โหมดทดลอง (ข้อมูลเก็บในเครื่อง)</span></div>
+
+    <!-- roster -->
+    <div class="page" id="p-roster">
+      <div class="bar">
+        <div class="mon">
+          <button class="btn ghost" id="mPrev">‹</button>
+          <select id="mSel"></select>
+          <button class="btn ghost" id="mNext">›</button>
+        </div>
+        <span class="status" id="mStatus"></span>
+        <span class="sp"></span>
+        <button class="btn ed" id="btnImport">นำเข้า CSV จาก Excel</button>
+        <button class="btn ed" id="btnHolAuto" title="ตั้งวันหยุดใหม่จากเสาร์-อาทิตย์และรายการวันหยุด">รีเซ็ตวันหยุด</button>
+        <button class="btn dan ed" id="btnClear">ล้างตาราง</button>
+        <button class="btn" id="btnWord">⬇ Word</button>
+        <button class="btn" onclick="print()">พิมพ์</button>
+        <button class="btn pri ed" id="btnSave">บันทึก</button>
+        <input type="file" id="fileCsv" accept=".csv,text/csv" class="hidden">
+      </div>
+      <div class="gridwrap"><table class="g" id="grid"></table></div>
+      <div class="note-in"><b>หมายเหตุ</b><input id="mNote" placeholder="เช่น ANC : ชนกนันท์"></div>
+      <div class="legend">
+        <span><i style="background:var(--hol);border:1px solid #f5c2c2"></i>วันหยุด (คลิกที่วันที่เพื่อสลับวันหยุด/วันทำการ)</span>
+        <span><i style="background:#fff7ed;border:1px solid #fdba74"></i>ชื่อซ้ำในช่วงเวลาเดียวกัน</span>
+      </div>
+    </div>
+
+    <!-- summary -->
+    <div class="page hidden" id="p-summary">
+      <div class="bar">
+        <div class="mon"><select id="sMon"></select></div>
+        <select id="sRange" class="btn ghost"><option value="all">ทั้งเดือน</option><option value="h1">วันที่ 1–15</option><option value="h2">วันที่ 16–สิ้นเดือน</option></select>
+        <span class="sp"></span>
+        <button class="btn" onclick="print()">พิมพ์</button>
+        <button class="btn" id="btnSumCsv">⬇ CSV</button>
+      </div>
+      <div class="kpis" id="kpis"></div>
+      <div class="card" style="overflow:auto"><h3 style="margin:0 0 10px" id="sTitle"></h3><table class="s" id="sum"></table></div>
+    </div>
+
+    <!-- settings -->
+    <div class="page hidden" id="p-settings">
+      <div class="tabs" id="stabs">
+        <button data-t="gen" class="on">ทั่วไป</button><button data-t="doc">รายชื่อแพทย์</button><button data-t="sh">ประเภทเวร/อัตรา</button><button data-t="hol">วันหยุด</button>
+      </div>
+      <div class="card" id="st-gen">
+        <div class="frm">
+          <label>ชื่อโรงพยาบาล</label><input id="setHosp">
+          <label>หัวเรื่องเอกสาร</label><input id="setTitle">
+          <label>ฟอนต์ในไฟล์ Word</label><input id="setFont" placeholder="Sarabun / TH SarabunPSK">
+        </div>
+      </div>
+      <div class="card hidden" id="st-doc">
+        <div class="hint">ชื่อที่ใช้ในตาราง (ชื่อเล่น/ชื่อต้น) เรียงตามลำดับที่ต้องการให้แสดงในตัวเลือก</div>
+        <table class="e" id="tDoc"></table>
+        <button class="btn" id="addDoc" style="margin-top:10px">+ เพิ่มแพทย์</button>
+      </div>
+      <div class="card hidden" id="st-sh">
+        <div class="hint">ลำดับแถว = ลำดับคอลัมน์ในตารางและไฟล์ Word · กลุ่ม/กลุ่มย่อยที่ติดกันจะถูกรวมหัวตารางให้อัตโนมัติ · "คอลัมน์ CSV" ใช้ตอนนำเข้าไฟล์ Excel (เช่น T, U, … Z)</div>
+        <div style="overflow:auto"><table class="e" id="tSh"></table></div>
+        <button class="btn" id="addSh" style="margin-top:10px">+ เพิ่มประเภทเวร</button>
+      </div>
+      <div class="card hidden" id="st-hol">
+        <div class="hint">บรรทัดละ 1 วัน รูปแบบ <b>MM-DD|ชื่อวัน</b> = ทุกปี หรือ <b>YYYY-MM-DD|ชื่อวัน</b> (ปี ค.ศ.) = เฉพาะปีนั้น เช่น วันหยุดชดเชย/วันหยุดพิเศษ · ใช้ตอนสร้างเดือนใหม่ (เสาร์-อาทิตย์เป็นวันหยุดอัตโนมัติ)</div>
+        <textarea id="setHol" rows="18" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-family:inherit"></textarea>
+      </div>
+      <button class="btn pri" id="btnSaveSet">บันทึกการตั้งค่า</button>
+    </div>
+
+    <!-- users -->
+    <div class="page hidden" id="p-users">
+      <div class="card">
+        <div class="hint"><b>admin</b> = ทุกอย่าง · <b>editor</b> = จัด/แก้ตารางเวร · <b>viewer</b> = ดูและดาวน์โหลดเท่านั้น</div>
+        <div style="overflow:auto"><table class="e" id="tUsr"></table></div>
+        <button class="btn" id="addUsr" style="margin-top:10px">+ เพิ่มผู้ใช้</button>
+      </div>
+      <button class="btn pri" id="btnSaveUsr">บันทึกผู้ใช้งาน</button>
+    </div>
+
+    <!-- help -->
+    <div class="page hidden" id="p-help">
+      <div class="card" style="line-height:1.75">
+        <h3 style="margin-top:0">การจัดตารางเวรเดือนใหม่</h3>
+        <ol>
+          <li>เลือกเดือนที่ช่องด้านบน — ถ้ายังไม่มีข้อมูล ระบบสร้างตารางว่างพร้อมวันหยุด (เสาร์-อาทิตย์ + รายการวันหยุดในตั้งค่า)</li>
+          <li>คลิกที่ตัวเลขวันที่เพื่อสลับวันหยุด/วันทำการ (เช่น วันหยุดพิเศษ)</li>
+          <li>เลือกชื่อแพทย์ในแต่ละช่อง หรือกด <b>นำเข้า CSV จาก Excel</b> (บันทึกไฟล์ตารางเวรจาก Excel เป็น CSV UTF-8) ระบบอ่านคอลัมน์ A (วันที่) และคอลัมน์ตามที่ตั้งไว้ (T–Z)</li>
+          <li>กด <b>บันทึก</b> แล้วกด <b>⬇ Word</b> เพื่อได้ไฟล์ตารางเวรสำหรับลงนาม/ติดประกาศ</li>
+          <li>หน้า <b>สรุปค่าตอบแทน</b> นับจำนวนเวรและคำนวณเงินรายคนตามอัตราในตั้งค่า (เลือกครึ่งเดือนได้)</li>
+        </ol>
+        <p class="hint">หากเปลี่ยนอัตราค่าตอบแทน ให้แก้ที่ ตั้งค่า → ประเภทเวร/อัตรา (มีผลกับการคำนวณทุกเดือน)</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast"></div>
+<div id="busy" class="hidden"><div class="spin"></div></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script src="wordExport.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
