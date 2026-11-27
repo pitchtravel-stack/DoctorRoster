@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prototype — จัดเวรแพทย์ในเวลา | รพ.ร้องกวาง</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#1d4ed8;--blue2:#2563eb;--blue-l:#eff6ff;--blue-m:#dbeafe;--ink:#0f172a;--mut:#64748b;--line:#e2e8f0;--bg:#f5f8fc;--red:#c00000;--hol:#f1f5f9}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Sarabun',sans-serif;color:var(--ink);background:var(--bg);font-size:15px}
+button,input,select{font-family:inherit;font-size:15px}
+.hidden{display:none!important}
+.proto{background:#fef3c7;color:#92400e;text-align:center;font-size:13px;padding:5px}
+#app{display:flex;min-height:calc(100vh - 28px)}
+#side{width:240px;background:#0f2a6b;color:#dbe6ff;display:flex;flex-direction:column;position:fixed;top:28px;bottom:0;left:0;z-index:30;transition:transform .2s}
+.brand{padding:18px;border-bottom:1px solid rgba(255,255,255,.12)} .brand b{display:block;color:#fff} .brand span{font-size:13px;opacity:.75}
+.nav{padding:10px 8px;flex:1}
+.nav .sec{font-size:12px;opacity:.55;padding:10px 12px 4px}
+.nav a{display:flex;gap:10px;padding:10px 12px;border-radius:10px;color:#dbe6ff;cursor:pointer;margin-bottom:2px}
+.nav a:hover{background:rgba(255,255,255,.08)} .nav a.on{background:#2563eb;color:#fff}
+.nav a .new{margin-left:auto;background:#22c55e;color:#fff;font-size:11px;border-radius:999px;padding:1px 7px}
+.side-ver{font-size:12px;opacity:.6;padding:12px 16px}
+#main{flex:1;margin-left:240px;min-width:0}
+.top{display:flex;align-items:center;gap:10px;padding:12px 20px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.top h2{margin:0;font-size:18px;flex:1}
+#burger{display:none;background:none;border:0;font-size:24px;cursor:pointer}
+.page{padding:18px 20px 60px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.bar .sp{flex:1}
+.btn{border:0;border-radius:10px;padding:8px 13px;cursor:pointer;background:var(--blue-m);color:var(--blue);font-weight:600;white-space:nowrap}
+.btn.pri{background:var(--blue2);color:#fff} .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)} .btn.sm{padding:4px 9px;font-size:13px}
+.msel{padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-weight:600;background:#fff}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+.hint{font-size:13px;color:var(--mut)}
+/* pool */
+table.p{width:100%;border-collapse:collapse}
+table.p th{font-size:13px;color:var(--mut);text-align:left;padding:8px;border-bottom:1px solid var(--line);font-weight:600}
+table.p td{padding:7px 8px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+table.p tr.off td{opacity:.45}
+table.p input[type=text]{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:8px}
+.chip{display:inline-block;background:#fee2e2;color:#b91c1c;border-radius:999px;padding:1px 8px;font-size:12.5px;margin:1px 2px}
+.chip.b{background:var(--blue-m);color:var(--blue)}
+.tog{appearance:none;width:38px;height:22px;background:#cbd5e1;border-radius:999px;position:relative;cursor:pointer;vertical-align:middle}
+.tog:checked{background:var(--blue2)} .tog::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.15s}
+.tog:checked::after{left:19px}
+.cnt{font-variant-numeric:tabular-nums;font-weight:600}
+/* grid */
+.gridwrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff;max-height:calc(100vh - 250px)}
+table.g{border-collapse:separate;border-spacing:0;min-width:100%}
+table.g th,table.g td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center;padding:2px 3px}
+table.g thead th{background:var(--blue-l);position:sticky;z-index:3;font-size:13.5px;font-weight:600}
+table.g thead tr:nth-child(1) th{top:0;height:30px}
+table.g thead tr:nth-child(2) th{top:30px;height:34px;font-weight:400;font-size:11.5px;color:var(--mut);line-height:1.2}
+table.g thead tr:nth-child(3) th{top:64px;font-size:12px}
+table.g th.room{cursor:pointer} table.g th.room:hover{background:var(--blue-m)}
+table.g .sd{position:sticky;left:0;z-index:2;background:#fff;min-width:70px}
+table.g thead .sd{z-index:4;background:var(--blue-l)}
+table.g td.sd{font-weight:600;cursor:pointer} table.g td.sd small{display:block;font-weight:400;font-size:11px;color:var(--mut)}
+table.g td.half2{border-right:2px solid #cbd5e1}
+table.g select{width:100%;min-width:84px;border:1px solid transparent;background:transparent;padding:5px 1px;border-radius:7px;text-align:center;text-align-last:center;cursor:pointer;font-size:14px}
+table.g select:hover{border-color:#bfdbfe;background:#fff}
+table.g td.cf select{background:#fff7ed;border-color:#fdba74}
+table.g td.lv select{background:#fee2e2;border-color:#fca5a5;color:#b91c1c}
+table.g tr.wk-start td{border-top:2px solid #94a3b8}
+table.g tr.hol td{background:var(--hol);color:var(--mut);font-size:13px;height:26px}
+table.g tr.hol td.sd{color:var(--red);background:var(--hol)}
+table.g td.leave{min-width:120px;text-align:left;cursor:pointer;font-size:13px}
+table.g td.act{white-space:nowrap}
+.legend{font-size:13px;color:var(--mut);margin-top:8px;display:flex;gap:14px;flex-wrap:wrap}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px}
+/* workload */
+.wl{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.wl .it{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.wl .it b{display:block} .wl .bar2{height:6px;background:#e2e8f0;border-radius:4px;margin:6px 0;overflow:hidden} .wl .bar2 i{display:block;height:100%;background:var(--blue2)}
+.wl .it span{font-size:12.5px;color:var(--mut)}
+/* modal */
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
+.modal{background:#fff;border-radius:14px;padding:18px;width:100%;max-width:460px;max-height:90vh;overflow:auto}
+.modal h3{margin:0 0 4px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:12px 0}
+.cal .h{font-size:12px;color:var(--mut);text-align:center}
+.cal button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 0;cursor:pointer}
+.cal button.hd{color:var(--red)} .cal button.on{background:#ef4444;color:#fff;border-color:#ef4444}
+.cal button.dis{opacity:.35}
+.mrow{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+.menu{position:absolute;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15);z-index:70;padding:5px;min-width:220px}
+.menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:7px;cursor:pointer}
+.menu button:hover{background:var(--blue-l)}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 18px;border-radius:10px;z-index:80;font-size:14px;opacity:0;transition:.2s;pointer-events:none}
+#toast.show{opacity:1}
+.tabs{display:flex;gap:6px}
+.tabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;cursor:pointer}
+.tabs button.on{background:var(--blue2);color:#fff;border-color:var(--blue2)}
+.overlay{display:none}
+@media(max-width:860px){
+  #side{transform:translateX(-100%)} #side.open{transform:none}
+  .overlay.open{display:block;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:25}
+  #main{margin-left:0} #burger{display:block} .page{padding:12px 8px 60px}
+}
+</style>
+</head>
+<body>
+<div class="proto">PROTOTYPE v1.1.0 — ข้อมูลตัวอย่าง ธ.ค. 2569 จากไฟล์ Excel · ยังไม่บันทึกจริง (รีเฟรชแล้วกลับค่าเดิม)</div>
+<div id="app">
+  <aside id="side">
+    <div class="brand"><b>ตารางเวรแพทย์</b><span>รพ.ร้องกวาง</span></div>
+    <nav class="nav" id="nav">
+      <div class="sec">จัดตารางรายเดือน</div>
+      <a data-p="pool">👩‍⚕️ แพทย์ประจำเดือน <span class="new">ใหม่</span></a>
+      <a data-p="day">🏥 เวรในเวลา (A–S) <span class="new">ใหม่</span></a>
+      <a data-p="night">🌙 เวรนอกเวลา (T–Z)</a>
+      <a data-p="wl">📊 ภาระงานรายคน <span class="new">ใหม่</span></a>
+      <div class="sec">อื่น ๆ</div>
+      <a>💰 สรุปค่าตอบแทน</a><a>⚙️ ตั้งค่า</a><a>👥 ผู้ใช้งาน</a>
+    </nav>
+    <div class="side-ver">เวอร์ชัน v1.1.0-prototype</div>
+  </aside>
+  <div class="overlay" id="ovl"></div>
+  <main id="main">
+    <div class="top"><button id="burger">☰</button><h2 id="ptitle"></h2>
+      <select class="msel"><option>ธันวาคม 2569</option></select>
+    </div>
+
+    <!-- ========== POOL ========== -->
+    <div class="page" id="p-pool">
+      <div class="card">
+        <div class="bar" style="margin:0">
+          <div><b>แพทย์ที่ขึ้นเวรเดือนนี้</b><div class="hint">เปิด/ปิดได้รายเดือน · แก้ชื่อได้ · กำหนดวันลา (ระบบจะเตือนถ้าจัดเวรตรงวันลา) · รายชื่อที่ปิดจะไม่อยู่ในตัวเลือกของเดือนนี้</div></div>
+          <span class="sp"></span>
+          <button class="btn ghost" id="poolPrev">ดึงรายชื่อจากเดือนก่อน</button>
+          <button class="btn" id="poolAdd">+ เพิ่มแพทย์</button>
+        </div>
+      </div>
+      <div class="card" style="overflow:auto">
+        <table class="p" id="tPool"></table>
+      </div>
+    </div>
+
+    <!-- ========== DAY GRID ========== -->
+    <div class="page hidden" id="p-day">
+      <div class="bar">
+        <div class="tabs"><button class="on" data-v="all">ทั้งเดือน</button><button data-v="w1">สัปดาห์ 1</button><button data-v="w2">2</button><button data-v="w3">3</button><button data-v="w4">4</button><button data-v="w5">5</button></div>
+        <label class="hint"><input type="checkbox" id="showHol"> แสดงวันหยุด</label>
+        <span class="sp"></span>
+        <button class="btn ghost" id="btnPattern">ใช้รูปแบบสัปดาห์แรกทั้งเดือน</button>
+        <button class="btn">⬇ Word</button>
+        <button class="btn pri" id="btnSave">บันทึก</button>
+      </div>
+      <div class="gridwrap"><table class="g" id="grid"></table></div>
+      <div class="legend">
+        <span><i style="background:#fee2e2;border:1px solid #fca5a5"></i>จัดเวรตรงวันลา</span>
+        <span><i style="background:#fff7ed;border:1px solid #fdba74"></i>คนเดียวกันอยู่ 2 ห้องในช่วงเวลาเดียวกัน</span>
+        <span>คลิก <b>ชื่อห้อง</b> = ใส่คนเดียวทั้งเดือน · คลิก <b>วันที่</b> หรือ ⋯ = คัดลอกแถว · คลิกช่อง <b>ลา</b> = แก้วันลา</span>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <div class="bar" style="margin-bottom:8px"><b>ภาระงานเดือนนี้ (อัปเดตทันทีที่แก้)</b><span class="sp"></span><span class="hint">ครึ่งวัน = 1 ช่อง</span></div>
+        <div class="wl" id="wlMini"></div>
+      </div>
+    </div>
+
+    <!-- ========== NIGHT (existing) ========== -->
+    <div class="page hidden" id="p-night">
+      <div class="card"><b>หน้าเดิม (ใช้งานอยู่แล้ว)</b><p class="hint">ตารางเวรนอกเวลา T–Z หน้าเดิม — ใน prototype นี้ตัวเลือกชื่อจะดึงจาก "แพทย์ประจำเดือน" เหมือนกัน และเตือนเมื่อจัดเวรตรงวันลา</p></div>
+    </div>
+
+    <!-- ========== WORKLOAD ========== -->
+    <div class="page hidden" id="p-wl">
+      <div class="card" style="overflow:auto"><table class="p" id="tWl"></table></div>
+    </div>
+  </main>
+</div>
+<div id="toast"></div>
+
+<script>
+const TH_D=['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
+const MONTH='2569-12', ND=31;
+const wd=d=>new Date(2026,11,d).getDay();
+// ห้อง/ตำแหน่งในเวลา (ตั้งค่าได้ภายหลังในหน้า ตั้งค่า)
+const ROOMS=[
+ {k:'ER',  name:'ER',  room:'ห้องอุบัติเหตุฉุกเฉิน', duty:'ER/MC/1st Autopsy'},
+ {k:'NCD1',name:'NCD1',room:'ห้องตรวจโรค 1', duty:'NCD/HD/CAPD'},
+ {k:'NCD2',name:'NCD2',room:'ห้องตรวจโรค 2', duty:'NCD/ARV/TB/ConWard'},
+ {k:'ARI', name:'ARI', room:'ARI', duty:'ARI/OPD1'},
+ {k:'OPD1',name:'OPD1',room:'ห้องตรวจโรค 4', duty:'OPD1'},
+ {k:'OPD2',name:'OPD1',room:'ห้องตรวจโรค 4', duty:'OPD1 / AUDIT (บ่าย on call)'},
+ {k:'OPD3',name:'OPD1',room:'ห้องตรวจโรค 5', duty:'OPD1'},
+ {k:'LR',  name:'LR/ER',room:'วอร์ด (เสริม)', duty:'LR/IPD/ER/OPD/2nd Autopsy'},
+ {k:'IPD', name:'IPD', room:'วอร์ด', duty:'IPD'}
+];
+const SEED={"days": {"1": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_A": "ชนาพร", "OPD1_M": "นภัสสร", "OPD1_A": "นภัสสร", "OPD2_M": "อาทิตย์", "OPD2_A": "อาทิตย์", "OPD3_M": "พิม", "OPD3_A": "พิม", "LR_M": "ชนกนันท์", "LR_A": "ชนกนันท์", "IPD_M": "นภัสสร", "IPD_A": "นภัสสร"}, "2": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_M": "ชนาพร", "OPD1_M": "นภัสสร", "OPD1_A": "นภัสสร", "OPD2_M": "อาทิตย์", "OPD2_A": "อาทิตย์", "OPD3_M": "พิม", "OPD3_A": "พิม", "LR_M": "ชนกนันท์", "LR_A": "ชนกนันท์", "IPD_M": "นภัสสร", "IPD_A": "นภัสสร"}, "3": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_A": "ชนาพร", "OPD1_M": "นภัสสร", "OPD1_A": "นภัสสร", "OPD2_M": "อาทิตย์", "OPD2_A": "อาทิตย์", "OPD3_M": "พิม", "OPD3_A": "พิม", "IPD_M": "นภัสสร", "IPD_A": "นภัสสร"}, "4": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "OPD1_M": "นภัสสร", "OPD1_A": "นภัสสร", "OPD2_M": "อาทิตย์", "OPD2_A": "อาทิตย์", "OPD3_M": "พิม", "OPD3_A": "พิม", "IPD_M": "นภัสสร", "IPD_A": "นภัสสร"}, "8": {"ER_M": "นภัสสร", "ER_A": "นภัสสร", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_A": "ชนาพร", "OPD1_M": "อาทิตยา", "OPD1_A": "อาทิตยา", "OPD3_M": "วิทวัส", "OPD3_A": "วิทวัส", "LR_M": "อธิศีล", "LR_A": "อธิศีล", "IPD_M": "ชนกนันท์", "IPD_A": "ชนกนันท์"}, "9": {"ER_M": "อธิศีล", "ER_A": "อธิศีล", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_M": "ชนาพร", "OPD1_M": "อาทิตยา", "OPD1_A": "อาทิตยา", "OPD2_M": "นภัสสร", "OPD2_A": "นภัสสร", "OPD3_M": "วิทวัส", "OPD3_A": "วิทวัส", "IPD_M": "ชนกนันท์", "IPD_A": "ชนกนันท์"}, "11": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_M": "ชนาพร", "OPD1_M": "อาทิตยา", "OPD1_A": "อาทิตยา", "OPD2_M": "นภัสสร", "OPD2_A": "นภัสสร", "OPD3_M": "วิทวัส", "OPD3_A": "วิทวัส", "LR_M": "อธิศีล", "LR_A": "อธิศีล", "IPD_M": "ชนกนันท์", "IPD_A": "ชนกนันท์"}, "14": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_M": "ชนาพร", "OPD1_M": "วิทวัส", "OPD1_A": "วิทวัส", "OPD2_M": "ชนกนันท์", "OPD2_A": "ชนกนันท์", "OPD3_M": "นภัสสร", "OPD3_A": "นภัสสร", "LR_M": "อาทิตยา", "LR_A": "อาทิตยา", "IPD_M": "อธิศีล", "IPD_A": "อธิศีล"}, "15": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_A": "ชนาพร", "OPD1_M": "วิทวัส", "OPD1_A": "วิทวัส", "OPD2_M": "ชนกนันท์", "OPD2_A": "ชนกนันท์", "OPD3_M": "นภัสสร", "OPD3_A": "นภัสสร", "LR_M": "อาทิตยา", "LR_A": "อาทิตยา", "IPD_M": "อธิศีล", "IPD_A": "อธิศีล"}, "17": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_A": "ชนาพร", "OPD1_M": "วิทวัส", "OPD1_A": "วิทวัส", "OPD2_M": "ชนกนันท์", "OPD2_A": "ชนกนันท์", "OPD3_M": "นภัสสร", "OPD3_A": "นภัสสร", "LR_M": "อาทิตยา", "LR_A": "อาทิตยา", "IPD_M": "อธิศีล", "IPD_A": "อธิศีล"}, "18": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "OPD1_M": "วิทวัส", "OPD1_A": "วิทวัส", "OPD2_M": "ชนกนันท์", "OPD2_A": "ชนกนันท์", "OPD3_M": "นภัสสร", "OPD3_A": "นภัสสร", "LR_M": "อาทิตยา", "LR_A": "อาทิตยา", "IPD_M": "อธิศีล", "IPD_A": "อธิศีล"}, "21": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_M": "ชนาพร", "OPD1_M": "นภัสสร", "OPD1_A": "นภัสสร", "OPD2_M": "อธิศีล", "OPD2_A": "อธิศีล", "OPD3_M": "อาทิตยา", "OPD3_A": "อาทิตยา", "IPD_M": "วิทวัส", "IPD_A": "วิทวัส"}, "22": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_A": "ชนาพร", "OPD1_M": "นภัสสร", "OPD1_A": "นภัสสร", "OPD2_M": "อธิศีล", "OPD2_A": "อธิศีล", "OPD3_M": "อาทิตยา", "OPD3_A": "อาทิตยา", "IPD_M": "วิทวัส", "IPD_A": "วิทวัส"}, "23": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_M": "ชนาพร", "OPD1_M": "นภัสสร", "OPD1_A": "นภัสสร", "OPD2_M": "อธิศีล", "OPD2_A": "อธิศีล", "OPD3_M": "อาทิตยา", "OPD3_A": "อาทิตยา", "LR_M": "ชนกนันท์", "LR_A": "ชนกนันท์", "IPD_M": "วิทวัส", "IPD_A": "วิทวัส"}, "24": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_A": "ชนาพร", "OPD1_M": "นภัสสร", "OPD1_A": "นภัสสร", "OPD2_M": "อธิศีล", "OPD2_A": "อธิศีล", "OPD3_M": "อาทิตยา", "OPD3_A": "อาทิตยา", "LR_M": "ชนกนันท์", "LR_A": "ชนกนันท์", "IPD_M": "วิทวัส", "IPD_A": "วิทวัส"}, "25": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_M": "ชนาพร", "OPD1_M": "นภัสสร", "OPD1_A": "นภัสสร", "OPD2_M": "อธิศีล", "OPD2_A": "อธิศีล", "OPD3_M": "อาทิตยา", "OPD3_A": "อาทิตยา", "LR_M": "ชนกนันท์", "LR_A": "ชนกนันท์", "IPD_M": "วิทวัส", "IPD_A": "วิทวัส"}, "28": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_M": "ชนาพร", "OPD1_M": "อธิศีล", "OPD1_A": "อธิศีล", "OPD2_M": "วิทวัส", "OPD2_A": "วิทวัส", "OPD3_M": "ชนกนันท์", "OPD3_A": "ชนกนันท์", "LR_M": "นภัสสร", "LR_A": "นภัสสร", "IPD_M": "อาทิตยา", "IPD_A": "อาทิตยา"}, "29": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_A": "ชนาพร", "OPD1_M": "อธิศีล", "OPD1_A": "อธิศีล", "OPD2_M": "วิทวัส", "OPD2_A": "วิทวัส", "OPD3_M": "ชนกนันท์", "OPD3_A": "ชนกนันท์", "LR_M": "นภัสสร", "LR_A": "นภัสสร", "IPD_M": "อาทิตยา", "IPD_A": "อาทิตยา"}, "30": {"ER_M": "พสิษฐ์", "ER_A": "พสิษฐ์", "NCD1_M": "ตรีรัตน์", "NCD1_A": "ตรีรัตน์", "NCD2_M": "ภาณุวัฒน์", "NCD2_A": "ภาณุวัฒน์", "ARI_M": "ชนาพร", "OPD1_M": "อธิศีล", "OPD1_A": "อธิศีล", "OPD2_M": "วิทวัส", "OPD2_A": "วิทวัส", "OPD3_M": "ชนกนันท์", "OPD3_A": "ชนกนันท์", "LR_M": "นภัสสร", "LR_A": "นภัสสร", "IPD_M": "อาทิตยา", "IPD_A": "อาทิตยา"}}, "leave": {"2": ["นภัสสร"], "3": ["ชนกนันท์"], "4": ["ชนกนันท์"], "5": ["พสิษฐ์"], "6": ["พสิษฐ์"], "7": ["พสิษฐ์"], "8": ["พสิษฐ์"], "9": ["พสิษฐ์"], "19": ["พสิษฐ์"], "21": ["ชนกนันท์"], "22": ["ชนกนันท์"], "24": ["ชนกนันท์"], "25": ["ชนกนันท์"]}};
+const NIGHT_HOL=[5,6,7,10,12,13,16,19,20,26,27,31];
+const S={
+  pool:[
+    {name:'พสิษฐ์',on:true},{name:'ตรีรัตน์',on:true},{name:'ภาณุวัฒน์',on:true},{name:'ชนาพร',on:true},{name:'นภัสสร',on:true},{name:'อาทิตย์',on:true},
+    {name:'พิม',on:true},{name:'ชนกนันท์',on:true},{name:'วิทวัส',on:true},{name:'อาทิตยา',on:true},{name:'อธิศีล',on:true},{name:'ไผ่ตรง',on:true}
+  ],
+  days:SEED.days, leave:{}, hol:new Set(NIGHT_HOL), view:'all'
+};
+// leave: name -> [days]
+Object.entries(SEED.leave).forEach(([d,ns])=>ns.forEach(n=>{(S.leave[n]=S.leave[n]||[]).push(+d)}));
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2600)}
+const names=()=>S.pool.filter(p=>p.on&&p.name).map(p=>p.name);
+const onLeave=(n,d)=>(S.leave[n]||[]).includes(d);
+const workDays=()=>{const a=[];for(let d=1;d<=ND;d++)if(!S.hol.has(d))a.push(d);return a};
+const weekNo=d=>{let w=1;for(let i=2;i<=d;i++)if(wd(i)===1)w++;return w};
+
+// ---------- NAV ----------
+const TITLES={pool:'แพทย์ประจำเดือน',day:'เวรในเวลา (A–S)',night:'เวรนอกเวลา (T–Z)',wl:'ภาระงานรายคน'};
+function go(p){document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));$('p-'+p).classList.remove('hidden');
+  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===p));$('ptitle').textContent=TITLES[p];
+  $('side').classList.remove('open');$('ovl').classList.remove('open');
+  if(p==='pool')drawPool(); if(p==='day')drawGrid(); if(p==='wl')drawWl();}
+$('nav').onclick=e=>{const a=e.target.closest('a');if(a&&a.dataset.p)go(a.dataset.p);else if(a)toast('หน้าเดิม — ไม่มีใน prototype')};
+$('burger').onclick=()=>{$('side').classList.add('open');$('ovl').classList.add('open')};$('ovl').onclick=()=>{$('side').classList.remove('open');$('ovl').classList.remove('open')};
+
+// ---------- COUNT ----------
+function counts(){const c={};names().concat(Object.keys(S.leave)).forEach(n=>c[n]={day:0,night:0,leave:(S.leave[n]||[]).length});
+  Object.values(S.days).forEach(o=>Object.values(o).forEach(n=>{if(n){c[n]=c[n]||{day:0,night:0,leave:0};c[n].day++}}));
+  // เวรนอกเวลา (จากหน้าเดิม — ตัวอย่างจำนวนจากไฟล์)
+  const NIGHT={พสิษฐ์:6,นภัสสร:15,ชนกนันท์:20,วิทวัส:18,อาทิตยา:19,อธิศีล:17,ไผ่ตรง:4};
+  Object.entries(NIGHT).forEach(([n,v])=>{if(c[n])c[n].night=v});return c}
+
+// ---------- POOL PAGE ----------
+function drawPool(){const c=counts();
+  $('tPool').innerHTML='<tr><th style="width:40px">#</th><th style="width:70px">ขึ้นเวร</th><th>ชื่อในตาราง</th><th>วันลาเดือนนี้</th><th style="width:110px">เวรในเวลา<br><span class="hint">(ครึ่งวัน)</span></th><th style="width:100px">เวรนอกเวลา</th><th style="width:150px"></th></tr>'+
+  S.pool.map((p,i)=>{const lv=(S.leave[p.name]||[]).sort((a,b)=>a-b);const k=c[p.name]||{day:0,night:0};
+    return `<tr class="${p.on?'':'off'}"><td>${i+1}</td><td><input type="checkbox" class="tog" data-i="${i}" data-f="on" ${p.on?'checked':''}></td>
+    <td><input type="text" data-i="${i}" data-f="name" value="${esc(p.name)}"></td>
+    <td>${lv.length?lv.map(d=>`<span class="chip">${d}</span>`).join(''):'<span class="hint">–</span>'}</td>
+    <td class="cnt">${k.day}</td><td class="cnt">${k.night}</td>
+    <td><button class="btn sm" data-lv="${i}">วันลา</button> <button class="btn sm ghost" data-up="${i}">↑</button> <button class="btn sm ghost" data-dn="${i}">↓</button></td></tr>`}).join('');}
+$('tPool').onchange=e=>{const t=e.target,i=t.dataset.i;if(i==null)return;const p=S.pool[i];
+  if(t.dataset.f==='on'){p.on=t.checked;drawPool();toast(p.name+(p.on?' ขึ้นเวรเดือนนี้':' ไม่ขึ้นเวรเดือนนี้'));}
+  if(t.dataset.f==='name'){const old=p.name,nw=t.value.trim();if(!nw||nw===old)return;
+    if(confirm(`เปลี่ยนชื่อ "${old}" เป็น "${nw}" ในตารางเวรเดือนนี้ทั้งหมดด้วยหรือไม่?`)){Object.values(S.days).forEach(o=>Object.keys(o).forEach(k=>{if(o[k]===old)o[k]=nw}));if(S.leave[old]){S.leave[nw]=S.leave[old];delete S.leave[old]}}
+    p.name=nw;drawPool();}};
+$('tPool').onclick=e=>{const t=e.target.dataset;
+  if(t.lv!=null)return leaveModal(S.pool[+t.lv].name);
+  const mv=(i,d)=>{const j=i+d;if(j<0||j>=S.pool.length)return;[S.pool[i],S.pool[j]]=[S.pool[j],S.pool[i]];drawPool()};
+  if(t.up!=null)mv(+t.up,-1);if(t.dn!=null)mv(+t.dn,1);};
+$('poolAdd').onclick=()=>{const n=prompt('ชื่อแพทย์ (ชื่อที่ใช้ในตาราง)');if(n&&n.trim()){S.pool.push({name:n.trim(),on:true});drawPool();toast('เพิ่ม '+n.trim()+' แล้ว (จะอยู่ในรายชื่อหลักด้วย)')}};
+$('poolPrev').onclick=()=>toast('ดึงรายชื่อและลำดับจาก พ.ย. 2569 แล้ว (ตัวอย่าง)');
+
+// ---------- LEAVE MODAL ----------
+function leaveModal(name){const sel=new Set(S.leave[name]||[]);
+  const m=document.createElement('div');m.className='mask';
+  const draw=()=>{let h='';TH_D.forEach(x=>h+=`<div class="h">${x}</div>`);for(let i=0;i<wd(1);i++)h+='<div></div>';
+    for(let d=1;d<=ND;d++)h+=`<button data-d="${d}" class="${S.hol.has(d)?'hd':''} ${sel.has(d)?'on':''}">${d}</button>`;
+    m.innerHTML=`<div class="modal"><h3>วันลา — ${esc(name)}</h3><div class="hint">ธันวาคม 2569 · คลิกวันที่เพื่อเลือก/ยกเลิก (ตัวแดง = วันหยุด)</div><div class="cal">${h}</div>
+    <div class="hint">เลือกแล้ว ${sel.size} วัน</div><div class="mrow"><button class="btn ghost" data-x>ยกเลิก</button><button class="btn pri" data-ok>ตกลง</button></div></div>`};
+  draw();document.body.appendChild(m);
+  m.onclick=e=>{const b=e.target;if(b.dataset.d){const d=+b.dataset.d;sel.has(d)?sel.delete(d):sel.add(d);draw();}
+    else if(b.dataset.ok!=null){S.leave[name]=[...sel].sort((a,b)=>a-b);if(!sel.size)delete S.leave[name];m.remove();drawPool();if(!$('p-day').classList.contains('hidden'))drawGrid();}
+    else if(b.dataset.x!=null||b===m)m.remove();};}
+function leaveDayModal(d){ // เลือกคนลาในวันนั้น
+  const m=document.createElement('div');m.className='mask';
+  m.innerHTML=`<div class="modal"><h3>ผู้ลา — วันที่ ${d} ธ.ค. 2569</h3><div style="margin:12px 0;display:grid;grid-template-columns:1fr 1fr;gap:6px">${names().map(n=>`<label><input type="checkbox" value="${esc(n)}" ${onLeave(n,d)?'checked':''}> ${esc(n)}</label>`).join('')}</div>
+  <div class="mrow"><button class="btn ghost" data-x>ยกเลิก</button><button class="btn pri" data-ok>ตกลง</button></div></div>`;
+  document.body.appendChild(m);
+  m.onclick=e=>{const b=e.target;if(b.dataset.ok!=null){m.querySelectorAll('input').forEach(c=>{const a=new Set(S.leave[c.value]||[]);c.checked?a.add(d):a.delete(d);if(a.size)S.leave[c.value]=[...a];else delete S.leave[c.value]});m.remove();drawGrid();}
+    else if(b.dataset.x!=null||b===m)m.remove();};}
+
+// ---------- DAY GRID ----------
+document.querySelector('#p-day .tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;document.querySelectorAll('#p-day .tabs button').forEach(x=>x.classList.toggle('on',x===b));S.view=b.dataset.v;drawGrid()};
+$('showHol').onchange=drawGrid;
+function drawGrid(){
+  const N=names();
+  let h='<thead><tr><th class="sd" rowspan="3">วันที่</th>'+ROOMS.map(r=>`<th colspan="2" class="room" data-room="${r.k}" title="คลิกเพื่อใส่คนเดียวทั้งเดือน">${esc(r.name)}<br><span style="font-weight:400;font-size:11.5px">${esc(r.room)}</span></th>`).join('')+'<th rowspan="3">ลา</th><th rowspan="3"></th></tr>';
+  h+='<tr>'+ROOMS.map(r=>`<th colspan="2">${esc(r.duty)}</th>`).join('')+'</tr>';
+  h+='<tr>'+ROOMS.map(()=>'<th>เช้า<br>8.30-12.00</th><th>บ่าย<br>12.00-16.30</th>').join('')+'</tr></thead><tbody>';
+  for(let d=1;d<=ND;d++){
+    if(S.view!=='all'&&'w'+weekNo(d)!==S.view)continue;
+    const w=wd(d), ws=(w===1||d===1)?' wk-start':'';
+    if(S.hol.has(d)){ if(!$('showHol').checked)continue;
+      h+=`<tr class="hol${ws}"><td class="sd">${d}<small>${TH_D[w]}</small></td><td colspan="${ROOMS.length*2}">วันหยุด — ดูเวรที่หน้า "เวรนอกเวลา"</td><td></td><td></td></tr>`;continue;}
+    const o=S.days[d]||{}; const lv=N.filter(n=>onLeave(n,d)).concat(Object.keys(S.leave).filter(n=>!N.includes(n)&&onLeave(n,d)));
+    h+=`<tr data-d="${d}" class="${ws}"><td class="sd" title="คัดลอกแถว">${d}<small>${TH_D[w]}</small></td>`;
+    ROOMS.forEach(r=>['M','A'].forEach(hf=>{const k=r.k+'_'+hf,v=o[k]||'';const list=v&&!N.includes(v)?N.concat([v]):N;
+      h+=`<td class="${hf==='A'?'half2':''}"><select data-k="${k}"><option value=""></option>${list.map(n=>`<option${n===v?' selected':''}>${esc(n)}${onLeave(n,d)?' (ลา)':''}</option>`).join('')}</select></td>`;}));
+    h+=`<td class="leave" title="คลิกเพื่อแก้ผู้ลา">${lv.map(n=>`<span class="chip">${esc(n)}</span>`).join('')||'<span class="hint">+</span>'}</td><td class="act"><button class="btn sm ghost" data-menu="${d}">⋯</button></td></tr>`;
+  }
+  $('grid').innerHTML=h+'</tbody>';
+  // select value fix (option text มี (ลา))
+  $('grid').querySelectorAll('select').forEach(s=>{[...s.options].forEach(o=>o.value=o.text.replace(' (ลา)',''));const d=s.closest('tr').dataset.d;s.value=(S.days[d]||{})[s.dataset.k]||''});
+  check();drawMini();
+}
+function check(){
+  $('grid').querySelectorAll('tbody tr[data-d]').forEach(tr=>{const d=+tr.dataset.d,o=S.days[d]||{};
+    const cnt={};Object.entries(o).forEach(([k,n])=>{if(n){const t=k.slice(-1)+'|'+n;cnt[t]=(cnt[t]||0)+1}});
+    tr.querySelectorAll('select').forEach(s=>{const n=o[s.dataset.k];const td=s.parentElement;
+      td.classList.toggle('lv',!!n&&onLeave(n,d));td.classList.toggle('cf',!!n&&!onLeave(n,d)&&cnt[s.dataset.k.slice(-1)+'|'+n]>1)})});}
+$('grid').addEventListener('change',e=>{const s=e.target.closest('select');if(!s)return;const d=s.closest('tr').dataset.d;
+  S.days[d]=S.days[d]||{};if(s.value){S.days[d][s.dataset.k]=s.value;if(onLeave(s.value,+d))toast(`⚠ ${s.value} ลาวันที่ ${d}`)}else delete S.days[d][s.dataset.k];check();drawMini();});
+$('grid').addEventListener('click',e=>{
+  const th=e.target.closest('th.room');if(th)return fillRoom(th.dataset.room);
+  if(e.target.closest('td.leave'))return leaveDayModal(+e.target.closest('tr').dataset.d);
+  const b=e.target.closest('[data-menu]')||e.target.closest('td.sd');if(b&&b.closest('tr').dataset.d)rowMenu(+b.closest('tr').dataset.d,b);});
+
+function rowMenu(d,anchor){document.querySelectorAll('.menu').forEach(m=>m.remove());
+  const m=document.createElement('div');m.className='menu';const r=anchor.getBoundingClientRect();
+  m.style.left=Math.min(r.left,innerWidth-240)+'px';m.style.top=(r.bottom+scrollY+4)+'px';
+  m.innerHTML=`<button data-a="next">คัดลอกไปวันทำการถัดไป</button><button data-a="week">คัดลอกไปทุกวันที่เหลือในสัปดาห์</button><button data-a="same">คัดลอกไปทุกวัน${TH_D[wd(d)]}ที่เหลือในเดือน</button><button data-a="clear" style="color:#b91c1c">ล้างแถวนี้</button>`;
+  document.body.appendChild(m);
+  m.onclick=e=>{const a=e.target.dataset.a;if(!a)return;const src=Object.assign({},S.days[d]||{});const wdays=workDays().filter(x=>x>d);let tg=[];
+    if(a==='next')tg=wdays.slice(0,1);if(a==='week')tg=wdays.filter(x=>weekNo(x)===weekNo(d));if(a==='same')tg=wdays.filter(x=>wd(x)===wd(d));
+    if(a==='clear'){S.days[d]={};toast('ล้างวันที่ '+d)}else{tg.forEach(x=>S.days[x]=Object.assign({},src));toast(tg.length?`คัดลอกไปวันที่ ${tg.join(', ')}`:'ไม่มีวันทำการถัดไป')}
+    m.remove();drawGrid();};
+  setTimeout(()=>document.addEventListener('click',function f(ev){if(!m.contains(ev.target)){m.remove();document.removeEventListener('click',f)}}),0);}
+
+function fillRoom(rk){const r=ROOMS.find(x=>x.k===rk);const N=names();
+  const m=document.createElement('div');m.className='mask';
+  m.innerHTML=`<div class="modal"><h3>ใส่คนเดียวทั้งเดือน — ${esc(r.name)} ${esc(r.room)}</h3><div class="hint">ใส่ทุกวันทำการ (ข้ามวันหยุดและวันที่แพทย์คนนั้นลา)</div>
+  <div style="display:grid;grid-template-columns:90px 1fr;gap:10px;align-items:center;margin:14px 0">
+  <label>แพทย์</label><select id="fN" class="msel">${N.map(n=>`<option>${esc(n)}</option>`).join('')}</select>
+  <label>ช่วงเวลา</label><select id="fH" class="msel"><option value="MA">เช้า + บ่าย</option><option value="M">เช้า</option><option value="A">บ่าย</option></select>
+  <label>เฉพาะวัน</label><div>${[1,2,3,4,5].map(w=>`<label style="margin-right:8px"><input type="checkbox" class="fW" value="${w}" checked>${TH_D[w]}</label>`).join('')}</div>
+  <label>ช่องที่มีชื่อแล้ว</label><select id="fO" class="msel"><option value="0">ไม่ทับ</option><option value="1">ทับ</option></select></div>
+  <div class="mrow"><button class="btn ghost" data-x>ยกเลิก</button><button class="btn pri" data-ok>ใส่ชื่อ</button></div></div>`;
+  document.body.appendChild(m);
+  m.onclick=e=>{const b=e.target;if(b.dataset.ok!=null){const n=$('fN').value,hs=$('fH').value.split(''),ov=$('fO').value==='1',ws=[...m.querySelectorAll('.fW:checked')].map(x=>+x.value);let c=0,sk=0;
+      workDays().filter(d=>ws.includes(wd(d))).forEach(d=>{if(onLeave(n,d)){sk++;return}S.days[d]=S.days[d]||{};hs.forEach(h=>{const k=rk+'_'+h;if(ov||!S.days[d][k]){S.days[d][k]=n;c++}})});
+      m.remove();drawGrid();toast(`ใส่ ${n} ${c} ช่อง${sk?` (ข้ามวันลา ${sk} วัน)`:''}`);}
+    else if(b.dataset.x!=null||b===m)m.remove();};}
+
+$('btnPattern').onclick=()=>{if(!confirm('คัดลอกรูปแบบของสัปดาห์ที่ 1 (จ.–ศ.) ไปยังวันทำการที่ยังว่างทั้งเดือน ตามวันในสัปดาห์?'))return;
+  const tpl={};workDays().filter(d=>weekNo(d)===1).forEach(d=>tpl[wd(d)]=S.days[d]||{});let c=0;
+  workDays().filter(d=>weekNo(d)>1).forEach(d=>{const t=tpl[wd(d)];if(!t)return;S.days[d]=S.days[d]||{};Object.entries(t).forEach(([k,n])=>{if(!S.days[d][k]&&!onLeave(n,d)){S.days[d][k]=n;c++}})});
+  drawGrid();toast('เติม '+c+' ช่องที่ว่าง');};
+$('btnSave').onclick=()=>toast('(prototype) บันทึกเดือน ธ.ค. 2569 แล้ว');
+
+// ---------- WORKLOAD ----------
+function drawMini(){const c=counts();const N=names();const mx=Math.max(1,...N.map(n=>c[n].day));
+  $('wlMini').innerHTML=N.map(n=>{const k=c[n];return `<div class="it"><b>${esc(n)}</b><div class="bar2"><i style="width:${k.day/mx*100}%"></i></div><span>ในเวลา ${k.day} ช่อง · นอกเวลา ${k.night} เวร${k.leave?` · ลา ${k.leave} วัน`:''}</span></div>`}).join('')}
+function drawWl(){const c=counts();const N=names();
+  const per=n=>{const r={};ROOMS.forEach(x=>r[x.k]=0);Object.values(S.days).forEach(o=>Object.entries(o).forEach(([k,v])=>{if(v===n)r[k.split('_')[0]]++}));return r};
+  $('tWl').innerHTML='<tr><th>แพทย์</th>'+ROOMS.map(r=>`<th>${esc(r.name)}<br><span class="hint">${esc(r.room)}</span></th>`).join('')+'<th>รวมในเวลา<br>(ครึ่งวัน)</th><th>นอกเวลา</th><th>ลา (วัน)</th></tr>'+
+  N.map(n=>{const r=per(n),k=c[n];return `<tr><td><b>${esc(n)}</b></td>${ROOMS.map(x=>`<td class="cnt">${r[x.k]||''}</td>`).join('')}<td class="cnt">${k.day}</td><td class="cnt">${k.night}</td><td class="cnt">${k.leave||''}</td></tr>`}).join('');}
+
+go('day');
+</script>
+</body>
+</html>
