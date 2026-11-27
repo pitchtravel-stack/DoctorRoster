@@ -110,7 +110,6 @@ table.g td.act{white-space:nowrap}
       <a data-p="pool">👩‍⚕️ แพทย์ประจำเดือน <span class="new">ใหม่</span></a>
       <a data-p="day">🏥 เวรในเวลา (A–S) <span class="new">ใหม่</span></a>
       <a data-p="night">🌙 เวรนอกเวลา (T–Z)</a>
-      <a data-p="wl">📊 ภาระงานรายคน <span class="new">ใหม่</span></a>
       <div class="sec">อื่น ๆ</div>
       <a>💰 สรุปค่าตอบแทน</a><a>⚙️ ตั้งค่า</a><a>👥 ผู้ใช้งาน</a>
     </nav>
@@ -153,24 +152,12 @@ table.g td.act{white-space:nowrap}
         <span><i style="background:#fff7ed;border:1px solid #fdba74"></i>คนเดียวกันอยู่ 2 ห้องในช่วงเวลาเดียวกัน</span>
         <span>คลิก <b>ชื่อห้อง</b> = ใส่คนเดียวทั้งเดือน · คลิก <b>วันที่</b> หรือ ⋯ = คัดลอกแถว · คลิกช่อง <b>ลา</b> = แก้วันลา</span>
       </div>
-      <div class="card" style="margin-top:14px">
-        <div class="bar" style="margin-bottom:8px"><b>ภาระงานเดือนนี้ (อัปเดตทันทีที่แก้)</b><span class="sp"></span><span class="hint">ครึ่งวัน = 1 ช่อง</span></div>
-        <div class="wl" id="wlMini"></div>
-      </div>
     </div>
 
     <!-- ========== NIGHT (existing) ========== -->
     <div class="page hidden" id="p-night">
       <div class="card"><b>หน้าเดิม (ใช้งานอยู่แล้ว)</b><p class="hint">ตารางเวรนอกเวลา T–Z หน้าเดิม — ใน prototype นี้ตัวเลือกชื่อจะดึงจาก "แพทย์ประจำเดือน" เหมือนกัน และเตือนเมื่อจัดเวรตรงวันลา</p></div>
     </div>
-
-    <!-- ========== WORKLOAD ========== -->
-    <div class="page hidden" id="p-wl">
-      <div class="card" style="overflow:auto"><table class="p" id="tWl"></table></div>
-    </div>
-  </main>
-</div>
-<div id="toast"></div>
 
 <script>
 const TH_D=['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
@@ -208,29 +195,22 @@ const workDays=()=>{const a=[];for(let d=1;d<=ND;d++)if(!S.hol.has(d))a.push(d);
 const weekNo=d=>{let w=1;for(let i=2;i<=d;i++)if(wd(i)===1)w++;return w};
 
 // ---------- NAV ----------
-const TITLES={pool:'แพทย์ประจำเดือน',day:'เวรในเวลา (A–S)',night:'เวรนอกเวลา (T–Z)',wl:'ภาระงานรายคน'};
+const TITLES={pool:'แพทย์ประจำเดือน',day:'เวรในเวลา (A–S)',night:'เวรนอกเวลา (T–Z)'};
 function go(p){document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));$('p-'+p).classList.remove('hidden');
   document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===p));$('ptitle').textContent=TITLES[p];
   $('side').classList.remove('open');$('ovl').classList.remove('open');
-  if(p==='pool')drawPool(); if(p==='day')drawGrid(); if(p==='wl')drawWl();}
+  if(p==='pool')drawPool(); if(p==='day')drawGrid();}
 $('nav').onclick=e=>{const a=e.target.closest('a');if(a&&a.dataset.p)go(a.dataset.p);else if(a)toast('หน้าเดิม — ไม่มีใน prototype')};
 $('burger').onclick=()=>{$('side').classList.add('open');$('ovl').classList.add('open')};$('ovl').onclick=()=>{$('side').classList.remove('open');$('ovl').classList.remove('open')};
 
-// ---------- COUNT ----------
-function counts(){const c={};names().concat(Object.keys(S.leave)).forEach(n=>c[n]={day:0,night:0,leave:(S.leave[n]||[]).length});
-  Object.values(S.days).forEach(o=>Object.values(o).forEach(n=>{if(n){c[n]=c[n]||{day:0,night:0,leave:0};c[n].day++}}));
-  // เวรนอกเวลา (จากหน้าเดิม — ตัวอย่างจำนวนจากไฟล์)
-  const NIGHT={พสิษฐ์:6,นภัสสร:15,ชนกนันท์:20,วิทวัส:18,อาทิตยา:19,อธิศีล:17,ไผ่ตรง:4};
-  Object.entries(NIGHT).forEach(([n,v])=>{if(c[n])c[n].night=v});return c}
 
 // ---------- POOL PAGE ----------
-function drawPool(){const c=counts();
-  $('tPool').innerHTML='<tr><th style="width:40px">#</th><th style="width:70px">ขึ้นเวร</th><th>ชื่อในตาราง</th><th>วันลาเดือนนี้</th><th style="width:110px">เวรในเวลา<br><span class="hint">(ครึ่งวัน)</span></th><th style="width:100px">เวรนอกเวลา</th><th style="width:150px"></th></tr>'+
-  S.pool.map((p,i)=>{const lv=(S.leave[p.name]||[]).sort((a,b)=>a-b);const k=c[p.name]||{day:0,night:0};
+function drawPool(){
+  $('tPool').innerHTML='<tr><th style="width:40px">#</th><th style="width:70px">ขึ้นเวร</th><th>ชื่อในตาราง</th><th>วันลาเดือนนี้</th><th style="width:150px"></th></tr>'+
+  S.pool.map((p,i)=>{const lv=(S.leave[p.name]||[]).sort((a,b)=>a-b);
     return `<tr class="${p.on?'':'off'}"><td>${i+1}</td><td><input type="checkbox" class="tog" data-i="${i}" data-f="on" ${p.on?'checked':''}></td>
     <td><input type="text" data-i="${i}" data-f="name" value="${esc(p.name)}"></td>
     <td>${lv.length?lv.map(d=>`<span class="chip">${d}</span>`).join(''):'<span class="hint">–</span>'}</td>
-    <td class="cnt">${k.day}</td><td class="cnt">${k.night}</td>
     <td><button class="btn sm" data-lv="${i}">วันลา</button> <button class="btn sm ghost" data-up="${i}">↑</button> <button class="btn sm ghost" data-dn="${i}">↓</button></td></tr>`}).join('');}
 $('tPool').onchange=e=>{const t=e.target,i=t.dataset.i;if(i==null)return;const p=S.pool[i];
   if(t.dataset.f==='on'){p.on=t.checked;drawPool();toast(p.name+(p.on?' ขึ้นเวรเดือนนี้':' ไม่ขึ้นเวรเดือนนี้'));}
@@ -285,7 +265,7 @@ function drawGrid(){
   $('grid').innerHTML=h+'</tbody>';
   // select value fix (option text มี (ลา))
   $('grid').querySelectorAll('select').forEach(s=>{[...s.options].forEach(o=>o.value=o.text.replace(' (ลา)',''));const d=s.closest('tr').dataset.d;s.value=(S.days[d]||{})[s.dataset.k]||''});
-  check();drawMini();
+  check();
 }
 function check(){
   $('grid').querySelectorAll('tbody tr[data-d]').forEach(tr=>{const d=+tr.dataset.d,o=S.days[d]||{};
@@ -293,7 +273,7 @@ function check(){
     tr.querySelectorAll('select').forEach(s=>{const n=o[s.dataset.k];const td=s.parentElement;
       td.classList.toggle('lv',!!n&&onLeave(n,d));td.classList.toggle('cf',!!n&&!onLeave(n,d)&&cnt[s.dataset.k.slice(-1)+'|'+n]>1)})});}
 $('grid').addEventListener('change',e=>{const s=e.target.closest('select');if(!s)return;const d=s.closest('tr').dataset.d;
-  S.days[d]=S.days[d]||{};if(s.value){S.days[d][s.dataset.k]=s.value;if(onLeave(s.value,+d))toast(`⚠ ${s.value} ลาวันที่ ${d}`)}else delete S.days[d][s.dataset.k];check();drawMini();});
+  S.days[d]=S.days[d]||{};if(s.value){S.days[d][s.dataset.k]=s.value;if(onLeave(s.value,+d))toast(`⚠ ${s.value} ลาวันที่ ${d}`)}else delete S.days[d][s.dataset.k];check();});
 $('grid').addEventListener('click',e=>{
   const th=e.target.closest('th.room');if(th)return fillRoom(th.dataset.room);
   if(e.target.closest('td.leave'))return leaveDayModal(+e.target.closest('tr').dataset.d);
@@ -330,14 +310,6 @@ $('btnPattern').onclick=()=>{if(!confirm('คัดลอกรูปแบบ�
   workDays().filter(d=>weekNo(d)>1).forEach(d=>{const t=tpl[wd(d)];if(!t)return;S.days[d]=S.days[d]||{};Object.entries(t).forEach(([k,n])=>{if(!S.days[d][k]&&!onLeave(n,d)){S.days[d][k]=n;c++}})});
   drawGrid();toast('เติม '+c+' ช่องที่ว่าง');};
 $('btnSave').onclick=()=>toast('(prototype) บันทึกเดือน ธ.ค. 2569 แล้ว');
-
-// ---------- WORKLOAD ----------
-function drawMini(){const c=counts();const N=names();const mx=Math.max(1,...N.map(n=>c[n].day));
-  $('wlMini').innerHTML=N.map(n=>{const k=c[n];return `<div class="it"><b>${esc(n)}</b><div class="bar2"><i style="width:${k.day/mx*100}%"></i></div><span>ในเวลา ${k.day} ช่อง · นอกเวลา ${k.night} เวร${k.leave?` · ลา ${k.leave} วัน`:''}</span></div>`}).join('')}
-function drawWl(){const c=counts();const N=names();
-  const per=n=>{const r={};ROOMS.forEach(x=>r[x.k]=0);Object.values(S.days).forEach(o=>Object.entries(o).forEach(([k,v])=>{if(v===n)r[k.split('_')[0]]++}));return r};
-  $('tWl').innerHTML='<tr><th>แพทย์</th>'+ROOMS.map(r=>`<th>${esc(r.name)}<br><span class="hint">${esc(r.room)}</span></th>`).join('')+'<th>รวมในเวลา<br>(ครึ่งวัน)</th><th>นอกเวลา</th><th>ลา (วัน)</th></tr>'+
-  N.map(n=>{const r=per(n),k=c[n];return `<tr><td><b>${esc(n)}</b></td>${ROOMS.map(x=>`<td class="cnt">${r[x.k]||''}</td>`).join('')}<td class="cnt">${k.day}</td><td class="cnt">${k.night}</td><td class="cnt">${k.leave||''}</td></tr>`}).join('');}
 
 go('day');
 </script>
